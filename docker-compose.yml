@@ -16,7 +16,7 @@ services:
   app:
     depends_on:
       - postgresdb
-    build: ./
+    build: .
     restart: unless-stopped
     env_file: ./.env
     ports:

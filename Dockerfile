@@ -1,10 +1,10 @@
 FROM node:18-alpine AS builder
 
-WORKDIR /app
+WORKDIR /processos
 
 COPY package*.json ./
 RUN npm install
 
 COPY . .
 
-CMD ["npm", "start"]
+CMD ["npm","run" "start"]
