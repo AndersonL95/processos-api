@@ -1,13 +1,14 @@
-require("dotenv").config();
+import dotenv from 'dotenv';
 import express, {Express, Request, Response} from "express";
 
+dotenv.config();
 const app: Express = express();
-const port = process.env.NODE_DOCKER || 8080;
+const PORT = process.env.NODE_DOCKER_PORT || 8080;
 
 
 app.get('/', (req: Request, res: Response)=>{
-    res.send("Server run")
+    res.send("Server funcionando...")
 });
-app.listen(port,() =>{
-    console.log(`Server is runing ${port}.`);
+app.listen(PORT,() =>{
+    console.log(`Server is runing ${PORT}.`);
 });
