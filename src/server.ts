@@ -16,7 +16,9 @@ app.get('/', (req: Request, res: Response)=>{
 });
 const start = async () => {
   await AppDataSource.initialize().then((db) =>{
-    console.log("DataSource funcionando...",`${db.migrations.join(" ,")}`)
+    console.log("DataSource funcionando...",`${db.migrations.map((name) =>{
+      console.log("NAME:",name);
+    })}`)
   }).catch((erro) =>{
     console.log("Erro durante a inicialização.", erro)
   })

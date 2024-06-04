@@ -12,8 +12,7 @@ services:
       - $DB_PORT
     volumes:
       - db:/var/lib/postgres
-    depends_on:
-    - postgresdb
+    
   app:
     
     build: .

@@ -12,7 +12,7 @@ export class User extends BaseEntity {
     username: string;
 
     @Column()
-    @IsEmail()
+    @Length(11,30)
     email:string;
 
     @Column()

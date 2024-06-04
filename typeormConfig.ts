@@ -15,7 +15,7 @@ for (const envName of Object.keys(process.env)){
         password: process.env.POSTGRES_PASSWORD,
         entities: ["src/entity/*.ts"],
         migrations: ['src/migrations/*.ts'],
-        migrationsTransactionMode: 'each',
+        migrationsRun:true,
         synchronize: false,
         logging: false,
         

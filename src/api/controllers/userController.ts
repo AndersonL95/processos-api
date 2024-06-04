@@ -8,16 +8,16 @@ dotenv.config();
 
 
 export const createUser = async (req: Request, res: Response) =>{
-    const { name, email, password, phone, cpf, cargo} = req.body;
+    const { username, name, email, password, phone, cpf, cargo} = req.body;
     
     if(!name || !email || !password) {
         res.status(400).send({ message: "É necessario inserir nome e email e senha!"});
         return;
     }
     try {
-        const newUser = await User.create({name,email,password,phone,cpf,cargo});
+        const newUser = await User.create({username,name,email,password,phone,cpf,cargo});
         await newUser.save();
-        res.status(201).send({id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo});
+        res.status(201).send({id: newUser.id, username: newUser.username, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo});
         
     } catch (error) {
         res.status(500).send({message: "Erro ao criar usuario!", error})
