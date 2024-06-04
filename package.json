@@ -8,9 +8,9 @@
     "start": "nodemon src/server.ts",
     "dev": "nodemon src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
-    "migration:create": "ts-node migrations.ts -d ./src/config/db.ts",
-    "migration:run": "npm run typeorm migration:run",
-    "migration:revert": "npm run typeorm migration:revert",
+    "migration:create": "ts-node migrations.ts -d ./typeormConfig.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ./typeormConfig.ts",
+    "migration:revert": "typeorm migration:revert -d ./typeormConfig.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -46,6 +46,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.12",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.5"
   }
 }
