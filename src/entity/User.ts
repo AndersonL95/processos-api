@@ -35,6 +35,9 @@ export class User extends BaseEntity {
     @Length(11, 14)
     phone:string;
 
+    @Column({nullable: true})
+    refreshToken: string;
+
     @BeforeInsert()
     async hashPassword() {
         this.password = await bcrypt.hash(this.password, 10);

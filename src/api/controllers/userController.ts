@@ -58,6 +58,16 @@ export const deleteUser = async (req: Request, res: Response) => {
     await user.remove();
     res.send("Usuario excluido.");
 };
+
+
+
+const genAccessToken = (user: User) => {
+    return jwt.sign({id: user.id}, process.env.SECRET_KEY_JWT as string, {expiresIn: "15m"});
+};
+const genRefreshToken = (user: User) => {
+    return jwt.sign({id: user.id}, process.env.REFRESH_SECRET_KEY as string, {expiresIn: "7d"});
+};
+
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({where:{email}});
@@ -66,6 +76,34 @@ export const login = async (req: Request, res: Response) => {
     const isValid = await bcrypt.compare(password, user.password);
     if(!isValid) return res.status(401).send("Senha invalida.");
 
-    const token = jwt.sign({id: user.id}, process.env.SECRET_KEY_JWT as string, {expiresIn: "1h"});
-    res.send({token});
+    const accessToken = genAccessToken(user);
+    const refreshToken = genRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+    
+    res.send({ accessToken, refreshToken });
 }
+ export const refreshToken = async (req: Request, res: Response) => {
+    const { token } = req.body;
+    if(!token) return res.status(401).send("Token não encontrado.");
+
+    let payload: any;
+
+    try {
+        payload = jwt.verify(token, process.env.REFRESH_SECRET_KEY as string);
+    } catch (error) {
+        return res.status(401).send("Token invalido.");
+    }
+
+    const user = await User.findOneBy({id: payload.id});
+    if(!user || user.refreshToken !== token) return res.status(401).send("Token invalido.");
+
+    const accessToken = genAccessToken(user);
+    const newRefreshToken = genRefreshToken(user);
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.send({ accessToken, refreshToken: newRefreshToken})
+ };
