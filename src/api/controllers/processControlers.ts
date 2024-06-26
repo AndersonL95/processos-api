@@ -21,6 +21,8 @@ export const createContract = async (req: Request, res: Response) =>{
     const { numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance,
         todo, addTerm, addQuant, companySituation, userId } = req.body;
     const file = req.file;
+    const existContract = await Contract.findOne({where: {numContract}});
+    if(existContract) return res.status(409).send({message: "Contrato já existe!"})
     console.log("ARQUIVO PDF:",file);
 
     if(!file){
@@ -48,7 +50,7 @@ export const createContract = async (req: Request, res: Response) =>{
    
         await contractPath.save(contract);
      } catch (error) {
-         res.status(500).send({message: "Erro ao criar usuario!", error})
+         res.status(500).send({message: "Erro ao criar contrato!", error})
      }
      res.status(201).send(contract);
 };
