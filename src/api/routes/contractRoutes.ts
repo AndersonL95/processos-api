@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post('/contract', uploadAuth, createContract);
 router.get('/contract', listContracts);
-router.delete('/contract/:id([0-9]+)', deleteContract);
+router.delete('/contract/:id', deleteContract);
 
 export default router;

@@ -62,7 +62,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 
 const genAccessToken = (user: User) => {
-    return jwt.sign({id: user.id}, process.env.SECRET_KEY_JWT as string, {expiresIn: "15m"});
+    return jwt.sign({id: user.id}, process.env.SECRET_KEY_JWT as string, {expiresIn: "5m"});
 };
 const genRefreshToken = (user: User) => {
     return jwt.sign({id: user.id}, process.env.REFRESH_SECRET_KEY as string, {expiresIn: "7d"});
@@ -93,11 +93,12 @@ export const login = async (req: Request, res: Response) => {
     try {
         payload = jwt.verify(token, process.env.REFRESH_SECRET_KEY as string);
     } catch (error) {
-        return res.status(401).send("Token invalido.");
+        return res.status(401).send("Token invalido!.");
     }
-
-    const user = await User.findOneBy({id: payload.id});
-    if(!user || user.refreshToken !== token) return res.status(401).send("Token invalido.");
+    const user = await User.findOne({where :{id: payload.id}});
+    console.log(user?.refreshToken);
+    console.log(token)
+    if(!user || user.refreshToken !== token) return res.status(401).send("RefreshToken invalido.");
 
     const accessToken = genAccessToken(user);
     const newRefreshToken = genRefreshToken(user);
@@ -107,3 +108,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.send({ accessToken, refreshToken: newRefreshToken})
  };
+ 
+
+
+ 

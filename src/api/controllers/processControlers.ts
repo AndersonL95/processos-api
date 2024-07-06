@@ -3,17 +3,13 @@ import multer from "multer";
 import AppDataSource from '../../../typeormConfig';
 import { FindOneOptions } from "typeorm";
 import { Contract } from "../../entity/Process";
+import { where } from "sequelize";
+import { parse } from "path";
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) =>{
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) =>{
-        cb(null, `${Date.now()}-${file.originalname}`); 
-    }
-});
+const storage = multer.memoryStorage()
+    
 
-const upload = multer({ storage:storage});
+const upload = multer({storage});
 
 
 
@@ -23,7 +19,7 @@ export const createContract = async (req: Request, res: Response) =>{
     const file = req.file;
     const existContract = await Contract.findOne({where: {numContract}});
     if(existContract) return res.status(409).send({message: "Contrato já existe!"})
-    console.log("ARQUIVO PDF:",file);
+    console.log("ARQUIVO PDF:",file?.buffer);
 
     if(!file){
         return res.status(400).send("Nenhum arquivo enviado");
@@ -45,7 +41,7 @@ export const createContract = async (req: Request, res: Response) =>{
     contract.addQuant = addQuant; 
     contract.companySituation = companySituation;
     contract.userId = userId;
-    contract.file = file.path;
+    contract.file = file.buffer.toString('base64');
     try {
    
         await contractPath.save(contract);
@@ -61,13 +57,15 @@ export const listContracts = async (req: Request, res: Response) => {
     res.status(200).send(contracts);
 }
 export const deleteContract = async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id: number = parseInt(req.params.id);
     const contractPath = AppDataSource.getRepository(Contract);
 
     try {
-        await contractPath.findOneOrFail(id as FindOneOptions);
+        await contractPath.findOneOrFail({where:{id}});
+       
     }catch(error){
-        res.status(404).send("Contrato não encontrado",);
+        res.status(404).send(error);
+        return;
     }
     await contractPath.delete(id);
 
