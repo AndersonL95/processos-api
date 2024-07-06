@@ -3,15 +3,19 @@ import dotenv from 'dotenv';
 import express, {Express, Request, Response} from "express";
 import userRoutes from '../src/api/routes/userRoutes';
 import authRoutes from '../src/api/routes/authRoutes';
+import contractRoutes from '../src/api/routes/contractRoutes';
 import AppDataSource from '../typeormConfig';
+import path from 'path';
 dotenv.config();
 const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
 
 
 app.use(bodyParser.json());
-app.use('/api',userRoutes);
+app.use('/uploads', express.static(path.join(__dirname,'./uploads')));
 app.use('/api', authRoutes);
+app.use('/api',userRoutes);
+app.use('/api',contractRoutes);
 
 app.get('/', (req: Request, res: Response)=>{
     res.send("Server funcionando...")
