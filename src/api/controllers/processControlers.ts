@@ -3,8 +3,6 @@ import multer from "multer";
 import AppDataSource from '../../../typeormConfig';
 import { FindOneOptions } from "typeorm";
 import { Contract } from "../../entity/Process";
-import { where } from "sequelize";
-import { parse } from "path";
 
 const storage = multer.memoryStorage()
     
@@ -14,7 +12,7 @@ const upload = multer({storage});
 
 
 export const createContract = async (req: Request, res: Response) =>{
-    const { numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance,
+    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance,
         todo, addTerm, addQuant, companySituation, userId } = req.body;
     const file = req.file;
     const existContract = await Contract.findOne({where: {numContract}});
@@ -27,6 +25,7 @@ export const createContract = async (req: Request, res: Response) =>{
     }
     const contractPath = AppDataSource.getRepository(Contract);
     const contract = new Contract();
+    contract.name = name;
     contract.numContract = numContract;
     contract.numProcess = numProcess
     contract.manager = manager;
@@ -54,6 +53,16 @@ export const createContract = async (req: Request, res: Response) =>{
 export const listContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
     const contracts = await contractPath.find();
+    res.status(200).send(contracts);
+}
+export const list3LastContracts = async (req: Request, res: Response) => {
+    const contractPath = AppDataSource.getRepository(Contract);
+    const id: number = parseInt(req.params.id);
+    const contracts = await contractPath.find({order: {
+        id: "DESC"
+    },
+    take: 3
+});
     res.status(200).send(contracts);
 }
 export const deleteContract = async (req: Request, res: Response) => {
