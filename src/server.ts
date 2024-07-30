@@ -11,7 +11,8 @@ const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
 
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit:"50mb"}));
+app.use(bodyParser.urlencoded({limit: '50mb',extended:true}))
 app.use('/uploads', express.static(path.join(__dirname,'./uploads')));
 app.use('/api', authRoutes);
 app.use('/api',userRoutes);

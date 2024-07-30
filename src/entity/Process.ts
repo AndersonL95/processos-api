@@ -9,6 +9,10 @@ export class Contract extends BaseEntity {
 
     @Column()
     @Length(4, 30)
+    name: string;
+    
+    @Column()
+    @Length(4, 30)
     numProcess: string;
 
     @Column()
@@ -67,7 +71,7 @@ export class Contract extends BaseEntity {
    @Column()
    userId: number;
 
-   @Column()
+   @Column({type:"text"})
    file: string;
     
    
