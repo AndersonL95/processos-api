@@ -11,44 +11,49 @@ const upload = multer({storage});
 
 
 
-export const createContract = async (req: Request, res: Response) =>{
-    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance,
-        todo, addTerm, addQuant, companySituation, userId } = req.body;
-    const file = req.file;
-    const existContract = await Contract.findOne({where: {numContract}});
-    if(existContract) return res.status(409).send({message: "Contrato já existe!"})
-    console.log("ARQUIVO PDF:",file?.buffer);
-
-    if(!file){
-        return res.status(400).send("Nenhum arquivo enviado");
+    export const createContract = async (req: Request, res: Response) => {
+        const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, userId, file } = req.body;
         
-    }
-    const contractPath = AppDataSource.getRepository(Contract);
-    const contract = new Contract();
-    contract.name = name;
-    contract.numContract = numContract;
-    contract.numProcess = numProcess
-    contract.manager = manager;
-    contract.supervisor = supervisor;
-    contract.initDate = initDate;
-    contract.finalDate = finalDate;
-    contract.contractLaw = contractLaw;
-    contract.contractStatus = contractStatus;
-    contract.balance = balance;
-    contract.todo = todo;
-    contract.addTerm = addTerm;
-    contract.addQuant = addQuant; 
-    contract.companySituation = companySituation;
-    contract.userId = userId;
-    contract.file = file.buffer.toString('base64');
-    try {
-   
-        await contractPath.save(contract);
-     } catch (error) {
-         res.status(500).send({message: "Erro ao criar contrato!", error})
-     }
-     res.status(201).send(contract);
-};
+    
+        if (!file) {
+            return res.status(400).send("Nenhum arquivo enviado");
+        }
+    
+        const existContract = await Contract.findOne({ where: { numContract } });
+        if (existContract) {
+            return res.status(409).send({ message: "Contrato já existe!" });
+        }
+    
+        try {
+            const contractPath = AppDataSource.getRepository(Contract);
+            const newContract = contractPath.create({
+                name,
+                numProcess,
+                numContract,
+                manager,
+                supervisor,
+                initDate,
+                finalDate,
+                contractLaw,
+                contractStatus,
+                balance,
+                todo,
+                addTerm,
+                addQuant,
+                companySituation,
+                userId,
+                file
+            });
+
+            await contractPath.save(newContract);
+            console.log("AQUIVO: ", newContract);
+
+            res.status(201).send(newContract);
+        } catch (error) {
+            res.status(500).send({ message: "Erro ao criar contrato!", error });
+        }
+    };
+
 
 export const listContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);

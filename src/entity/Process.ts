@@ -71,7 +71,7 @@ export class Contract extends BaseEntity {
    @Column()
    userId: number;
 
-   @Column()
+   @Column({type:"text"})
    file: string;
     
    
