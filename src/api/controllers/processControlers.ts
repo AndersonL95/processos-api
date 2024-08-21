@@ -14,7 +14,6 @@ const upload = multer({storage});
     export const createContract = async (req: Request, res: Response) => {
         const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, userId, file } = req.body;
         
-    
         if (!file) {
             return res.status(400).send("Nenhum arquivo enviado");
         }
@@ -46,7 +45,7 @@ const upload = multer({storage});
             });
 
             await contractPath.save(newContract);
-            console.log("AQUIVO: ", newContract);
+            //console.log("AQUIVO: ", newContract);
 
             res.status(201).send(newContract);
         } catch (error) {
@@ -60,6 +59,12 @@ export const listContracts = async (req: Request, res: Response) => {
     const contracts = await contractPath.find();
     res.status(200).send(contracts);
 }
+/*export const listContractId = async (req: Request, res: Response) => {
+    const id = req.params;
+    const contractPath = AppDataSource.getRepository(Contract);
+    const contracts = await contractPath.findOne({where: {id: Number(id)}});
+    res.status(200).send(contracts);
+}*/
 export const list3LastContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
     const id: number = parseInt(req.params.id);
@@ -87,7 +92,32 @@ export const deleteContract = async (req: Request, res: Response) => {
 }
 
 
+export const updateContract = async (req: Request, res: Response) =>{
+    const id = parseInt(req.params.id);
 
+    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, userId, file } = req.body;
+    const contractPath = AppDataSource.getRepository(Contract);
+    let updateContract = await contractPath.findOne({where: {id: id}});
+
+    if(!updateContract){
+        return res.status(404).send({message: "Contrato não encontrado."});
+    }
+   updateContract = {
+    ...updateContract,
+        name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus,
+        balance, todo, addTerm, addQuant, companySituation, userId,
+        ...(file && {file}),
+        
+   }
+   //console.log("FEITO!", updateContract)
+
+    try {
+        await contractPath.save(updateContract!);
+        res.status(200).send(updateContract);
+    }catch(e){
+        res.status(500).send({message: "Erro ao atualizar contrato"});
+    }
+}
 
 
 export const uploadAuth = upload.single('file');
