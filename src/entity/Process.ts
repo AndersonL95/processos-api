@@ -8,8 +8,15 @@ export class Contract extends BaseEntity {
     id: number;
 
     @Column()
+    tenantId: number;
+    
+    @Column()
     @Length(4, 30)
     name: string;
+
+    @Column()
+    @Length(4,10)
+    role: string;
     
     @Column()
     @Length(4, 30)
@@ -63,6 +70,10 @@ export class Contract extends BaseEntity {
     @Column()
     @Length(11, 30)
     companySituation: string;
+
+    @Column()
+    @Length(11,50)
+    sector: string;
 
    @ManyToOne(() => User)
    @JoinColumn({name: 'userId'})

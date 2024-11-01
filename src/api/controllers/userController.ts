@@ -3,21 +3,31 @@ import dotenv from 'dotenv';
 import { User } from '../../entity/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 
 dotenv.config();
 
-
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
 export const createUser = async (req: Request, res: Response) =>{
-    const { username, name, email, password, phone, cpf, cargo} = req.body;
+    const { username, name, email, password, phone, cpf, cargo, photo, role} = req.body;
+    const tenantId = req.body.tenantId;
+    console.log("TENANTID: ",tenantId);
     
     if(!name || !email || !password) {
         res.status(400).send({ message: "É necessario inserir nome e email e senha!"});
         return;
     }
+    const existUser = await User.findOne({ where: { email, name } });
+    if (existUser) {
+        return res.status(409).send({ message: "Usuario já existe!" });
+    }
+
     try {
-        const newUser = await User.create({username,name,email,password,phone,cpf,cargo});
+        const photoBase64 = req.file ? req.file.buffer.toString('base64') : null;
+        const newUser = User.create({ username, name, email, password, phone, cpf, cargo, photo, role, tenantId });
         await newUser.save();
-        res.status(201).send({id: newUser.id, username: newUser.username, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo});
+        res.status(201).send({id: newUser.id, username: newUser.username, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo,photo: newUser.photo, role: newUser.role});
         
     } catch (error) {
         res.status(500).send({message: "Erro ao criar usuario!", error})
@@ -27,7 +37,7 @@ export const createUser = async (req: Request, res: Response) =>{
 
 export const listUsers = async (req: Request, res: Response) => {
     try {
-        const users = await User.find();
+        const users = await User.find({where: {tenantId: req.body.tenantId}});
         res.status(200).send(users);
     } catch (error) {
         res.status(500).send({message: 'Erro ao tentar buscar os usuarios!', error});
@@ -36,23 +46,36 @@ export const listUsers = async (req: Request, res: Response) => {
 };
 export const getUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
-    const user = await User.findOne({where: {id: userID}});
+    const tenantId = req.body.tenantId;
+    const user = await User.findOne({where: {id: userID, tenantId}});
     if(!user) return res.status(404).send("Usuario não encontrado.");
     res.send(user);
     
 }
 export const updateUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
-    const user = await User.findOne({where: {id: userID}});
+    const tenantId = req.body.tenantId;
+
+    const user = await User.findOne({where: {id: userID, tenantId}});
     if(!user) return res.status(404).send("Usuario não encontrado.");
 
-    User.merge(user, req.body);
-    await user.save();
-    res.send(user);
+    try{
+        if(req.file){
+            const image64 = req.file.buffer.toString('base64');
+            user.photo = image64;
+        }
+        User.merge(user, req.body);
+        await user.save();
+        res.send(user);
+    }catch(e){
+
+    }
 };
 export const deleteUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
-    const user = await User.findOne({where: {id: userID}});
+        const tenantId = req.body.tenantId;
+
+    const user = await User.findOne({where: {id: userID, tenantId}});
     if(!user) return res.status(404).send("Usuario não encontrado.");
 
     await user.remove();
@@ -62,7 +85,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 
 const genAccessToken = (user: User) => {
-    return jwt.sign({id: user.id}, process.env.SECRET_KEY_JWT as string, {expiresIn: "10m"});
+    return jwt.sign({id: user.id, tenantId: user.tenantId}, process.env.SECRET_KEY_JWT as string, {expiresIn: "10m"});
 };
 const genRefreshToken = (user: User) => {
     return jwt.sign({id: user.id}, process.env.REFRESH_SECRET_KEY as string, {expiresIn: "7d"});
@@ -109,4 +132,4 @@ export const login = async (req: Request, res: Response) => {
  
 
 
- 
+ export const uploadUserAuth = upload.single('photo');
