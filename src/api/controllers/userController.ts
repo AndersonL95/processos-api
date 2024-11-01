@@ -10,7 +10,7 @@ dotenv.config();
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 export const createUser = async (req: Request, res: Response) =>{
-    const { username, name, email, password, phone, cpf, cargo, photo, role} = req.body;
+    const { username, name, email, password, phone, cpf, cargo, photo, role, active} = req.body;
     const tenantId = req.body.tenantId;
     console.log("TENANTID: ",tenantId);
     
@@ -25,9 +25,9 @@ export const createUser = async (req: Request, res: Response) =>{
 
     try {
         const photoBase64 = req.file ? req.file.buffer.toString('base64') : null;
-        const newUser = User.create({ username, name, email, password, phone, cpf, cargo, photo, role, tenantId });
+        const newUser = User.create({ username, name, email, password, phone, cpf, cargo, photo, role, active, tenantId });
         await newUser.save();
-        res.status(201).send({id: newUser.id, username: newUser.username, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo,photo: newUser.photo, role: newUser.role});
+        res.status(201).send({id: newUser.id, username: newUser.username, name: newUser.name, email: newUser.email, phone: newUser.phone, cpf: newUser.cpf, cargo: newUser.cargo,photo: newUser.photo, role: newUser.role, active: newUser.active});
         
     } catch (error) {
         res.status(500).send({message: "Erro ao criar usuario!", error})

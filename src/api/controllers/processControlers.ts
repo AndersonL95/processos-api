@@ -12,7 +12,7 @@ const upload = multer({storage});
 
 
     export const createContract = async (req: Request, res: Response) => {
-        const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, userId, file } = req.body;
+        const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, sector, active, userId, file } = req.body;
         const tenantId = req.body.tenantId;
 
         if (!file) {
@@ -42,6 +42,8 @@ const upload = multer({storage});
                 addQuant,
                 companySituation,
                 tenantId,
+                sector,
+                active,
                 userId,
                 file
             });
@@ -59,7 +61,7 @@ export const listContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
     const tenantId = req.body.tenantId;
 
-    const contracts = await contractPath.find({where:{tenantId: req.body.tenantId}});
+    const contracts = await contractPath.find({where:{tenantId: tenantId}});
     res.status(200).send(contracts);
 }
 /*export const listContractId = async (req: Request, res: Response) => {
@@ -70,16 +72,21 @@ export const listContracts = async (req: Request, res: Response) => {
 }*/
 export const list3LastContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
+    const tenantId = req.body.tenantId;
+
     const id: number = parseInt(req.params.id);
-    const contracts = await contractPath.find({order: {
-        tenantId: req.body.tenantId,
-        id: "DESC",
-    },
-    take: 3
+    const contracts = await contractPath.find({
+        where: { tenantId: tenantId },
+        order: { id: "DESC" },
+        take: 3
+    
+
+    
 });
     res.status(200).send(contracts);
 }
 export const deleteContract = async (req: Request, res: Response) => {
+    
     const id: number = parseInt(req.params.id);
     const contractPath = AppDataSource.getRepository(Contract);
     const tenantId = req.body.tenantId;
@@ -101,11 +108,11 @@ export const deleteContract = async (req: Request, res: Response) => {
 export const updateContract = async (req: Request, res: Response) =>{
     const id = parseInt(req.params.id);
 
-    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, userId, file } = req.body;
+    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, sector, active,userId, file } = req.body;
     const tenantId = req.body.tenantId;
 
     const contractPath = AppDataSource.getRepository(Contract);
-    let updateContract = await contractPath.findOne({where: {id: id, tenantId: req.body.tenantId}});
+    let updateContract = await contractPath.findOne({where: {id: id, tenantId: tenantId}});
 
     if(!updateContract){
         return res.status(404).send({message: "Contrato não encontrado."});
@@ -113,7 +120,7 @@ export const updateContract = async (req: Request, res: Response) =>{
    updateContract = {
     ...updateContract,
         name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus,
-        balance, todo, addTerm, addQuant, companySituation,tenantId, userId,
+        balance, todo, addTerm, addQuant, companySituation,sector,active, tenantId, userId,
         ...(file && {file}),
         
    }
