@@ -8,8 +8,15 @@ export class User extends BaseEntity {
     id: number;
 
     @Column()
+    tenantId: number;
+    
+    @Column()
     @Length(4, 20)
     username: string;
+
+    @Column()
+    @Length(4,10)
+    role: string
 
     @Column()
     @Length(11,30)
@@ -37,6 +44,10 @@ export class User extends BaseEntity {
 
     @Column({nullable: true})
     refreshToken: string;
+
+    @Column({ type: 'text', nullable: true })
+    photo: string;
+    
 
     @BeforeInsert()
     async hashPassword() {
