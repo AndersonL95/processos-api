@@ -19,6 +19,10 @@ export class User extends BaseEntity {
     role: string
 
     @Column()
+    @Length(10,20)
+    active: string;
+
+    @Column()
     @Length(11,30)
     email:string;
 

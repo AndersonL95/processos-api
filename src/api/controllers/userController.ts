@@ -105,7 +105,7 @@ export const login = async (req: Request, res: Response) => {
     user.refreshToken = refreshToken;
     await user.save();
     
-    res.send({ accessToken, refreshToken, id: user.id});
+    res.send({ accessToken, refreshToken, id: user.id, tenantId: user.tenantId});
 }
  export const refreshToken = async (req: Request, res: Response) => {
     const { token } = req.body;
