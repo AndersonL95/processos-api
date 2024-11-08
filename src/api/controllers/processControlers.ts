@@ -64,27 +64,52 @@ export const listContracts = async (req: Request, res: Response) => {
     const contracts = await contractPath.find({where:{tenantId: tenantId}});
     res.status(200).send(contracts);
 }
-/*export const listContractId = async (req: Request, res: Response) => {
-    const id = req.params;
+export const listContractId = async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).send({ error: 'Id invalido.' });
+    }
+
     const contractPath = AppDataSource.getRepository(Contract);
-    const contracts = await contractPath.findOne({where: {id: Number(id)}});
-    res.status(200).send(contracts);
-}*/
+    try {
+        const contract = await contractPath.findOne({ where: { id } });
+        if (!contract) {
+            return res.status(404).send({ error: 'Contrato não encontrado' });
+        }
+        res.status(200).send(contract);
+    } catch (error) {
+        res.status(500).send({ error: 'Internal server error' });
+    }
+};
+
+
 export const list3LastContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
     const tenantId = req.body.tenantId;
 
-    const id: number = parseInt(req.params.id);
-    const contracts = await contractPath.find({
-        where: { tenantId: tenantId },
-        order: { id: "DESC" },
-        take: 3
-    
+    // Validate that tenantId is provided
+    if (!tenantId) {
+        return res.status(400).send({ error: 'tenantId is required' });
+    }
 
-    
-});
-    res.status(200).send(contracts);
-}
+    try {
+        const contracts = await contractPath.find({
+            where: { tenantId: tenantId },
+            order: { id: "DESC" },
+            take: 3
+        });
+
+        // Check if contracts are found
+        if (contracts.length === 0) {
+            return res.status(404).send({ error: 'No contracts found for this tenant' });
+        }
+
+        res.status(200).send(contracts);
+    } catch (error) {
+        res.status(500).send({ error: 'Internal server error' });
+    }
+};
+
 export const deleteContract = async (req: Request, res: Response) => {
     
     const id: number = parseInt(req.params.id);
