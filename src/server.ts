@@ -6,6 +6,7 @@ import authRoutes from '../src/api/routes/authRoutes';
 import contractRoutes from '../src/api/routes/contractRoutes';
 import AppDataSource from '../typeormConfig';
 import path from 'path';
+import sectorRoutes from '../src/api/routes/sectorRoutes';
 dotenv.config();
 const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
@@ -17,6 +18,7 @@ app.use('/uploads', express.static(path.join(__dirname,'./uploads')));
 app.use('/api', authRoutes);
 app.use('/api',userRoutes);
 app.use('/api',contractRoutes);
+app.use('/api', sectorRoutes);
 
 app.get('/', (req: Request, res: Response)=>{
     res.send("Server funcionando...")

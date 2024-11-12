@@ -87,7 +87,6 @@ export const list3LastContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
     const tenantId = req.body.tenantId;
 
-    // Validate that tenantId is provided
     if (!tenantId) {
         return res.status(400).send({ error: 'tenantId is required' });
     }
@@ -99,7 +98,6 @@ export const list3LastContracts = async (req: Request, res: Response) => {
             take: 3
         });
 
-        // Check if contracts are found
         if (contracts.length === 0) {
             return res.status(404).send({ error: 'No contracts found for this tenant' });
         }

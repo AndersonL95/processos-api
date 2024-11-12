@@ -11,9 +11,7 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 export const createUser = async (req: Request, res: Response) =>{
     const { username, name, email, password, phone, cpf, cargo, photo, role, active} = req.body;
-    const tenantId = req.body.tenantId;
-    console.log("TENANTID: ",tenantId);
-    
+    const tenantId = req.body.tenantId;    
     if(!name || !email || !password) {
         res.status(400).send({ message: "É necessario inserir nome e email e senha!"});
         return;
@@ -85,7 +83,8 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 
 const genAccessToken = (user: User) => {
-    return jwt.sign({id: user.id, tenantId: user.tenantId}, process.env.SECRET_KEY_JWT as string, {expiresIn: "10m"});
+
+    return jwt.sign({id: user.id, tenantId: user.tenantId}, process.env.SECRET_KEY_JWT as string, {expiresIn: "20m"});
 };
 const genRefreshToken = (user: User) => {
     return jwt.sign({id: user.id}, process.env.REFRESH_SECRET_KEY as string, {expiresIn: "7d"});
