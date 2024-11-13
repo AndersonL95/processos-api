@@ -7,6 +7,7 @@ import contractRoutes from '../src/api/routes/contractRoutes';
 import AppDataSource from '../typeormConfig';
 import path from 'path';
 import sectorRoutes from '../src/api/routes/sectorRoutes';
+import notificationRoutes from './api/routes/notificationRoutes';
 dotenv.config();
 const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
@@ -19,6 +20,7 @@ app.use('/api', authRoutes);
 app.use('/api',userRoutes);
 app.use('/api',contractRoutes);
 app.use('/api', sectorRoutes);
+app.use('/api', notificationRoutes);
 
 app.get('/', (req: Request, res: Response)=>{
     res.send("Server funcionando...")
