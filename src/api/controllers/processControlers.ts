@@ -3,6 +3,7 @@ import multer from "multer";
 import AppDataSource from '../../../typeormConfig';
 import { FindOneOptions } from "typeorm";
 import { Contract } from "../../entity/Process";
+import { processNotification } from "./notificationController";
 
 const storage = multer.memoryStorage()
     
@@ -49,8 +50,8 @@ const upload = multer({storage});
             });
 
             await contractPath.save(newContract);
-
-            res.status(201).send(newContract);
+            const notification = await processNotification(tenantId);
+            res.status(201).send({contract: newContract, notification});
         } catch (error) {
             res.status(500).send({ message: "Erro ao criar contrato!", error });
         }
@@ -147,11 +148,12 @@ export const updateContract = async (req: Request, res: Response) =>{
         ...(file && {file}),
         
    }
-   //console.log("FEITO!", updateContract)
 
     try {
         await contractPath.save(updateContract!);
-        res.status(200).send(updateContract);
+        const notification = await processNotification(tenantId);
+
+        res.status(200).send({contract: updateContract, notification});
     }catch(e){
         res.status(500).send({message: "Erro ao atualizar contrato"});
     }
