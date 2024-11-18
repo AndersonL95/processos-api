@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, OneToMany } from 'typeorm';
 import {IsEmail, Length} from 'class-validator';
 import bcrypt from 'bcrypt';
+import { UserNotification } from './UseNotification';
 
 @Entity('users')
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
-
+    
     @Column()
     tenantId: number;
     
@@ -52,7 +53,8 @@ export class User extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     photo: string;
     
-
+    @OneToMany(() => UserNotification, (useNotification) => useNotification.notification)
+    userNotifications: UserNotification[];
     @BeforeInsert()
     async hashPassword() {
         this.password = await bcrypt.hash(this.password, 10);

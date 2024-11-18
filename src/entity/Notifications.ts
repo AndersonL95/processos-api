@@ -1,10 +1,14 @@
 import { Length } from "class-validator";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm";
+import { User } from "./User";
+import { UserNotification } from "./UseNotification";
 
 @Entity()
 export class Notification {
     @PrimaryGeneratedColumn()
     id: number;
+
+   
 
     @Column()
     tenantId: number;
@@ -17,9 +21,6 @@ export class Notification {
     @Column()
     contractId: number;
 
-    @Column()
-    read: boolean;
-
-    @CreateDateColumn()
-    createdAt: Date;
+    @OneToMany(() => UserNotification, (useNotification) => useNotification.notification)
+    userNotifications: UserNotification[];
 }
