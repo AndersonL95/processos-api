@@ -3,43 +3,29 @@ services:
     type: web
     env: docker
     plan: starter
-    dockerfilePath: ./Dockerfile 
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
-      - key: POSTGRES_USER
-        fromService:
-          name: postgresdb
-          key: POSTGRES_USER
-      - key: POSTGRES_PASSWORD
-        fromService:
-          name: postgresdb
-          key: POSTGRES_PASSWORD
-      - key: POSTGRES_DB
-        fromService:
-          name: postgresdb
-          key: POSTGRES_DB
-      - key: POSTGRES_HOST
-        value: postgresdb
-      - key: DB_PORT
-        value: "5432"
-    buildCommand: npm install
-    startCommand: npm start
-    autoDeploy: true 
-    healthCheckPath: /health 
-    ports:
-      - 3000 
-
-  - name: postgresdb
-    type: web
-    plan: starter
-    database: postgres
-    envVars:
       - key: POSTGRES_USER
         value: myuser
       - key: POSTGRES_PASSWORD
         value: mypassword
       - key: POSTGRES_DB
         value: mydatabase
+      - key: POSTGRES_HOST
+        value: postgres
+      - key: DB_PORT
+        value: "5432"
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+
+databases:
+  - name: postgresdb
+    plan: starter
+    engine: postgres
+    version: 15
     disk:
       sizeGB: 10
