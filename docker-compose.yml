@@ -16,7 +16,7 @@ services:
   app:
     
     build: .
-    command: npm start
+    command: ./wait-for-it.sh ${POSTGRES_HOST}:${DB_PORT} -- npm start
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
