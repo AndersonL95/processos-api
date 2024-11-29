@@ -50,7 +50,8 @@ const upload = multer({storage});
             });
 
             await contractPath.save(newContract);
-            const notification = await processNotification(tenantId);
+            var textNotification = `Contrato ${newContract.name} foi adicionado`;
+            const notification = await processNotification(tenantId, textNotification);
             res.status(201).send({contract: newContract, notification});
         } catch (error) {
             res.status(500).send({ message: "Erro ao criar contrato!", error });
@@ -151,7 +152,9 @@ export const updateContract = async (req: Request, res: Response) =>{
 
     try {
         await contractPath.save(updateContract!);
-        const notification = await processNotification(tenantId);
+        var textNotification = `Contrato ${updateContract!.name} foi modificado`;
+
+        const notification = await processNotification(tenantId, textNotification);
 
         res.status(200).send({contract: updateContract, notification});
     }catch(e){

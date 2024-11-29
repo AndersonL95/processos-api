@@ -6,7 +6,7 @@ import { Request, Response } from "express";
 import { UserNotification } from "../../entity/UseNotification";
 import { User } from "../../entity/User";
 
-export const processNotification = async (tenantId: number) => {
+export const processNotification = async (tenantId: number, text: string) => {
     const contractRepo = AppDataSource.getRepository(Contract);
     const notificationRepository = AppDataSource.getRepository(Notification);
     const userNotificationRepository = AppDataSource.getRepository(UserNotification);
@@ -30,7 +30,7 @@ export const processNotification = async (tenantId: number) => {
             const notification = notificationRepository.create({
                 contractId: contract.id,
                 tenantId,
-                message: `Contrato ${contract.name} expira em breve.`,
+                message: `${text}.`,
             });
 
             await notificationRepository.save(notification);
@@ -54,7 +54,7 @@ export const listNotifications = async (req: Request, res: Response) => {
     const tenantId = req.body.tenantId;
     const userId = parseInt(req.params.userId);
     try{
-        await processNotification(tenantId);
+        await processNotification(tenantId,"");
         const notificationRepo = AppDataSource.getRepository(Notification);
         const userNotificationRepo = AppDataSource.getRepository(UserNotification);
         const notification = await notificationRepo.find({
