@@ -16,14 +16,14 @@ services:
   app:
     
     build: .
-    command: ./wait-for-it.sh ${POSTGRES_HOST}:${DB_PORT} -- npm start
+    command: npm start
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     ports:
      - $NODE_PORT:$NODE_PORT
     depends_on:
-    - postgresdb
+    - ${POSTGRES_HOST}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
