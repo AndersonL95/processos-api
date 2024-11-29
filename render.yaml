@@ -31,7 +31,7 @@ services:
       - 3000 
 
   - name: postgresdb
-    type: database
+    type: web
     plan: starter
     database: postgres
     envVars:
