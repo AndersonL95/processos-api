@@ -25,7 +25,4 @@ services:
 databases:
   - name: postgresdb
     plan: starter
-    engine: postgres
-    version: 15
-    disk:
-      sizeGB: 10
+  
