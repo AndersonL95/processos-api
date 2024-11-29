@@ -13,6 +13,7 @@ for (const envName of Object.keys(process.env)){
         database: process.env.POSTGRES_DB,
         username: process.env.POSTGRES_USER,
         password: process.env.POSTGRES_PASSWORD,
+        url: process.env.DATABASE_URL,
         entities: ["src/entity/*.ts"],
         migrations: ['src/migrations/*.ts'],
         migrationsRun:true,
