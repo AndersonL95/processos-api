@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import AppDataSource from '../../../typeormConfig';
+import AppDataSource from '../../typeormConfig';
 import { Sector } from "../../entity/Sector";
 
 

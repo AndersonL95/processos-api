@@ -4,7 +4,7 @@ import express, {Express, Request, Response} from "express";
 import userRoutes from '../src/api/routes/userRoutes';
 import authRoutes from '../src/api/routes/authRoutes';
 import contractRoutes from '../src/api/routes/contractRoutes';
-import AppDataSource from '../typeormConfig';
+import AppDataSource from './typeormConfig';
 import path from 'path';
 import sectorRoutes from '../src/api/routes/sectorRoutes';
 import notificationRoutes from './api/routes/notificationRoutes';

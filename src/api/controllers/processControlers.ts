@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import multer from "multer";
-import AppDataSource from '../../../typeormConfig';
+import AppDataSource from '../../typeormConfig';
 import { FindOneOptions } from "typeorm";
 import { Contract } from "../../entity/Process";
 import { processNotification } from "./notificationController";
