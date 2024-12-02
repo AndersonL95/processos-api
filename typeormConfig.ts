@@ -6,7 +6,7 @@ for (const envName of Object.keys(process.env)) {
     process.env[envName] = process.env[envName]?.replace(/\\n/g, '\n');
 }
 
-export const AppDataSource = new DataSource({
+ const AppDataSource = new DataSource({
     type: "postgres",
     url: process.env.DATABASE_URL,
     entities: ["src/entity/*.ts"],
