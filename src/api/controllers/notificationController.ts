@@ -1,6 +1,6 @@
 import { Notification } from "../../entity/Notifications";
 import { Contract } from "../../entity/Process";
-import AppDataSource from "../../typeormConfig";
+import AppDataSource from "../../../typeormConfig";
 import { Between, LessThan, MoreThan, MoreThanOrEqual } from "typeorm";
 import { Request, Response } from "express";
 import { UserNotification } from "../../entity/UseNotification";
