@@ -14,6 +14,9 @@ for (const envName of Object.keys(process.env)) {
     migrationsRun: true,
     synchronize: false, 
     logging: false, 
+    ssl: {
+        rejectUnauthorized: false,
+    }
 });
 
 export default AppDataSource;
