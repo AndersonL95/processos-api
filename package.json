@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "nodemon src/server.ts",
+    "start": "npm run migration:run && nodemon src/server.ts",
     "dev": "nodemon src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "migration:create": "ts-node migrations.ts -d ./typeormConfig.ts",
