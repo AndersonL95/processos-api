@@ -8,7 +8,7 @@ import AppDataSource from '../typeormConfig';
 import path from 'path';
 import sectorRoutes from '../src/api/routes/sectorRoutes';
 import notificationRoutes from './api/routes/notificationRoutes';
-import { createAdmin } from './api/controllers/userAdmin_create';
+import { createAdmin } from './userAdminCreate';
 dotenv.config();
 const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
