@@ -8,7 +8,7 @@ export const createAdmin = async () => {
     if (userCount === 0) {
       console.log("Tabela de usuários está vazia. Criando usuário administrador...");
 
-      const adminPassword = process.env.ADMIN_PASSWORD || '6003c408beda28988890f085d91';
+      const adminPassword = process.env.ADMIN_PASS || '6003c408beda28988890f085d91';
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
       const userAdmin = User.create({
