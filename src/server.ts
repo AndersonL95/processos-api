@@ -8,6 +8,7 @@ import AppDataSource from '../typeormConfig';
 import path from 'path';
 import sectorRoutes from '../src/api/routes/sectorRoutes';
 import notificationRoutes from './api/routes/notificationRoutes';
+import { createAdmin } from './api/controllers/userAdmin_create';
 dotenv.config();
 const app: Express = express();
 const PORT = process.env.NODE_PORT || 3000;
@@ -30,12 +31,16 @@ const start = async () => {
   await AppDataSource.initialize().then((db: { migrations: any[]; }) =>{
     console.log("DataSource funcionando...",`${db.migrations.map((name) =>{
       console.log("NAME:",name);
-    })}`)
+
+    })}`);
+
   }).catch((erro: any) =>{
     console.log("Erro durante a inicialização.", erro)
   })
   app.listen(PORT, () => {
     console.log(`SERVIDOR RODANDO NA PORTA ${PORT}`);
   })
+  await createAdmin()
+
 };
 start();
