@@ -37,10 +37,11 @@ const start = async () => {
   }).catch((erro: any) =>{
     console.log("Erro durante a inicialização.", erro)
   })
+  await createAdmin()
+
   app.listen(PORT, () => {
     console.log(`SERVIDOR RODANDO NA PORTA ${PORT}`);
   })
-  await createAdmin()
 
 };
 start();

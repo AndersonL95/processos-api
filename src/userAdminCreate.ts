@@ -9,13 +9,12 @@ export const createAdmin = async () => {
       console.log("Tabela de usuários está vazia. Criando usuário administrador...");
 
       const adminPassword = process.env.ADMIN_PASS || '6003c408beda28988890f085d91';
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
       const userAdmin = User.create({
         username: 'admin',
         name: 'Administrador',
         email: 'admin@example.com',
-        password: hashedPassword,
+        password: adminPassword,
         phone: '1234567890',
         cpf: '000.000.000-00',
         cargo: 'Gestor',
@@ -24,7 +23,7 @@ export const createAdmin = async () => {
         tenantId: 0, 
       });
       await userAdmin.save();
-
+     
       console.log(`Usuário administrador criado com sucesso! Login: admin@example.com, Senha: ${adminPassword}`);
     } else {
       console.log("Usuários já existem na tabela. Nenhuma ação necessária.");
@@ -32,4 +31,5 @@ export const createAdmin = async () => {
   } catch (error) {
     console.error("Erro ao verificar ou criar usuário administrador:", error);
   }
+  
 };
