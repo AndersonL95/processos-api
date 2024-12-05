@@ -24,7 +24,7 @@ export const createAdmin = async () => {
       });
       await userAdmin.save();
      
-      console.log(`Usuário administrador criado com sucesso! Login: admin@example.com, Senha: ${adminPassword}`);
+      console.log(`Usuário administrador criado com sucesso! Login: admin@example.com`);
     } else {
       console.log("Usuários já existem na tabela. Nenhuma ação necessária.");
     }
