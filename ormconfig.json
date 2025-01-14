@@ -1,10 +1,10 @@
 {
     "type": "postgres",
-    "host": "dpg-ct6ea65umphs7396ikag-a",
+    "host": "dpg-cu36f20gph6c73bo5ho0-a",
     "port": "5432",
     "username": "docinhand",
-    "password": "yy9YOK1mBrgwO9aM8MRM0SYmQZB3QUq2",
-    "database": "processos",
+    "password": "U8McYJ97Ed8AJNJJgnUmzt95LOGnGtbD",
+    "database": "processos_1hqi",
     "syncronize": true,
     "logging": false,
     "entites": ["src/entity/**/*.ts"],
