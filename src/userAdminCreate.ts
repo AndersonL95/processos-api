@@ -18,7 +18,7 @@ export const createAdmin = async () => {
         phone: '1234567890',
         cpf: '000.000.000-00',
         cargo: 'Gestor',
-        role: 'admin',
+        role: 'superAdmin',
         active: "yes",
         tenantId: 0, 
       });
