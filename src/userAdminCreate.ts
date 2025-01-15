@@ -20,7 +20,8 @@ export const createAdmin = async () => {
         cargo: 'Gestor',
         role: 'superAdmin',
         active: "yes",
-        tenantId: 0, 
+        tenantId: 0,
+        photo:""
       });
       await userAdmin.save();
      
