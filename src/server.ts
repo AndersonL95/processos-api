@@ -28,20 +28,15 @@ app.get('/', (req: Request, res: Response)=>{
 
 });
 const start = async () => {
-  await AppDataSource.initialize().then((db: { migrations: any[]; }) =>{
+  await AppDataSource.initialize().then((db) =>{
     console.log("DataSource funcionando...",`${db.migrations.map((name) =>{
       console.log("NAME:",name);
-
-    })}`);
-
-  }).catch((erro: any) =>{
+    })}`)
+  }).catch((erro) =>{
     console.log("Erro durante a inicialização.", erro)
   })
-  await createAdmin()
-
   app.listen(PORT, () => {
     console.log(`SERVIDOR RODANDO NA PORTA ${PORT}`);
   })
-
 };
 start();

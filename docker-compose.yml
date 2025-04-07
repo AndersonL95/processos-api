@@ -1,7 +1,20 @@
 version: "2.27.0"
 
 services:
- app:
+  postgresdb:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - $DB_PORT
+    volumes:
+      - db:/var/lib/postgres
+    
+  app:
+    
     build: .
     command: npm start
     volumes:
@@ -17,6 +30,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       DB_PORT: ${DB_PORT}
-  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    
 volumes:
   db:

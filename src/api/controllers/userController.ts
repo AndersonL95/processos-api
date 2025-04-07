@@ -35,13 +35,7 @@ export const createUser = async (req: Request, res: Response) =>{
 
 export const listUsers = async (req: Request, res: Response) => {
     try {
-            const {tenantId, role } = req.body
-            let users;
-            if(role === "superAdmin"){
-                users = await User.find()
-            }else {
-                users = await User.find({where: {tenantId}})
-            }
+        const users = await User.find({where: {tenantId: req.body.tenantId}});
         res.status(200).send(users);
     } catch (error) {
         res.status(500).send({message: 'Erro ao tentar buscar os usuarios!', error});
