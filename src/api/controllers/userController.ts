@@ -42,6 +42,15 @@ export const listUsers = async (req: Request, res: Response) => {
     }
     
 };
+export const listUsersInAdmin = async (req: Request, res: Response) => {
+    try {
+        const users = await User.find();
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(500).send({message: 'Erro ao tentar buscar os usuarios!', error});
+    }
+    
+};
 export const getUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
     const tenantId = req.body.tenantId;
