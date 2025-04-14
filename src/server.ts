@@ -11,7 +11,7 @@ import notificationRoutes from './api/routes/notificationRoutes';
 import { createAdmin } from './userAdminCreate';
 dotenv.config();
 const app: Express = express();
-const PORT = process.env.NODE_PORT || 3000;
+const PORT = parseInt(process.env.NODE_PORT || '3000', 10);
 
 
 app.use(bodyParser.json({limit:"50mb"}));
@@ -39,9 +39,9 @@ const start = async () => {
   })
   await createAdmin()
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`SERVIDOR RODANDO NA PORTA ${PORT}`);
-  })
-
+  });
+  
 };
 start();

@@ -16,10 +16,11 @@ services:
   app:
     
     build: .
-    command: npm start
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+    command: ["ts-node-dev", "--respawn", "--transpile-only", "src/server.ts"]
+
     ports:
      - $NODE_PORT:$NODE_PORT
     depends_on:

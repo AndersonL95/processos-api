@@ -9,6 +9,7 @@ dotenv.config();
 
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
+
 export const createUser = async (req: Request, res: Response) =>{
     const { username, name, email, password, phone, cpf, cargo, photo, role, active} = req.body;
     const tenantId = req.body.tenantId;    
@@ -42,6 +43,7 @@ export const listUsers = async (req: Request, res: Response) => {
     }
     
 };
+
 export const listUsersInAdmin = async (req: Request, res: Response) => {
     try {
         const users = await User.find();
@@ -51,6 +53,7 @@ export const listUsersInAdmin = async (req: Request, res: Response) => {
     }
     
 };
+
 export const getUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
     const tenantId = req.body.tenantId;
@@ -59,6 +62,7 @@ export const getUser = async (req: Request, res: Response) => {
     res.send(user);
     
 }
+
 export const updateUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
     const tenantId = req.body.tenantId;
@@ -78,6 +82,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     }
 };
+
 export const deleteUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
         const tenantId = req.body.tenantId;
@@ -88,8 +93,6 @@ export const deleteUser = async (req: Request, res: Response) => {
     await user.remove();
     res.send("Usuario excluido.");
 };
-
-
 
 const genAccessToken = (user: User) => {
 
@@ -115,6 +118,7 @@ export const login = async (req: Request, res: Response) => {
     
     res.send({ accessToken, refreshToken, id: user.id, tenantId: user.tenantId, role: user.role});
 }
+
  export const refreshToken = async (req: Request, res: Response) => {
     const { token } = req.body;
     if(!token) return res.status(401).send("Token não encontrado.");

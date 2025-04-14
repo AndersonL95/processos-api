@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:18
 
 WORKDIR /app
 
@@ -8,7 +8,8 @@ COPY tsconfig.json ./
 
 
 COPY . .
+RUN npm install -g ts-node-dev
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["ts-node-dev", "--respawn","--transpile-only","src/server.ts"]
