@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import {Length} from 'class-validator';
 import { User } from './User';
+import { AddTerm } from './AddTerms';
 
 @Entity('contract')
 export class Contract extends BaseEntity {
@@ -55,9 +56,10 @@ export class Contract extends BaseEntity {
     @Length(11, 30)
     todo: string;
 
-    @Column()
-    @Length(11, 30)
-    addTerm: string;
+    @OneToMany(() => AddTerm, (addTerm) => addTerm.contract, { cascade: true })
+    addTerm: AddTerm[];
+
+    
 
     @Column()
     @Length(11, 30)

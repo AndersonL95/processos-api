@@ -11,7 +11,7 @@ import { Sector } from "../../entity/Sector";
     
         const existSector = await Sector.findOne({ where: { name, tenantId } });
         if (existSector) {
-            return res.status(409).send({ message: "Secretaria já existe!" });
+            return res.status(409).send({ message: "Setor já existe!" });
         }
     
         try {
@@ -26,7 +26,7 @@ import { Sector } from "../../entity/Sector";
 
             res.status(201).send(newSector);
         } catch (error) {
-            res.status(500).send({ message: "Erro ao criar secretaria!", error });
+            res.status(500).send({ message: "Erro ao criar setor!", error });
         }
     };
 

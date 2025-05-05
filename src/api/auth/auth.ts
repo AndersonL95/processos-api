@@ -26,7 +26,7 @@ export const tokenAuth = (req: Request, res: Response, next: NextFunction) =>{
 };
 
 export const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 1 * 60 * 1000,
     max: 3,
     handler: (req, res) => {
       res.status(429).json({

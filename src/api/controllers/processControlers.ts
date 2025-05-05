@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import multer from "multer";
-import AppDataSource from '../../../typeormConfig';
 import { FindOneOptions } from "typeorm";
 import { Contract } from "../../entity/Process";
 import { processNotification } from "./notificationController";
+import AppDataSource from "../../../typeormConfig";
+import { AddTerm } from "../../entity/AddTerms";
 
 const storage = multer.memoryStorage()
     
@@ -12,52 +13,81 @@ const upload = multer({storage});
 
 
 
-    export const createContract = async (req: Request, res: Response) => {
-        const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, sector, active, userId, file } = req.body;
-        const tenantId = req.body.tenantId;
-
-        if (!file) {
-            return res.status(400).send("Nenhum arquivo enviado");
-        }
-    
-        const existContract = await Contract.findOne({ where: { numContract, tenantId } });
-        if (existContract) {
-            return res.status(409).send({ message: "Contrato já existe!" });
-        }
-    
-        try {
-            const contractPath = AppDataSource.getRepository(Contract);
-            const newContract = contractPath.create({
-                name,
-                numProcess,
-                numContract,
-                manager,
-                supervisor,
-                initDate,
-                finalDate,
-                contractLaw,
-                contractStatus,
-                balance,
-                todo,
-                addTerm,
-                addQuant,
-                companySituation,
-                tenantId,
-                sector,
-                active,
-                userId,
-                file
-            });
-
-            await contractPath.save(newContract);
-            var textNotification = `Contrato ${newContract.name} foi adicionado`;
-            const notification = await processNotification(tenantId, textNotification);
-            res.status(201).send({contract: newContract, notification});
-        } catch (error) {
-            res.status(500).send({ message: "Erro ao criar contrato!", error });
-        }
-    };
-
+export const createContract = async (req: Request, res: Response) => {
+    try {
+      const {
+        name,
+        numProcess,
+        numContract,
+        manager,
+        supervisor,
+        initDate,
+        finalDate,
+        contractLaw,
+        contractStatus,
+        balance,
+        todo,
+        addQuant,
+        companySituation,
+        sector,
+        active,
+        userId,
+        tenantId,
+      } = req.body;
+  
+      const files = req.files as {
+        [fieldname: string]: Express.Multer.File[];
+      };
+  
+      const file = files?.file?.[0]; // arquivo principal (opcional)
+      const addTermFiles = files?.addTerm || [];
+  
+      const addTermEntities = addTermFiles.map((file) => ({
+        file: file.buffer.toString('base64'),
+      }));
+        
+      const existContract = await Contract.findOne({ where: { numContract, tenantId } });
+      if (existContract) {
+        return res.status(409).send({ message: "Contrato já existe!" });
+      }
+  
+      const contractRepo = AppDataSource.getRepository(Contract);
+  
+      const newContract = contractRepo.create({
+        name,
+        numProcess,
+        numContract,
+        manager,
+        supervisor,
+        initDate,
+        finalDate,
+        contractLaw,
+        contractStatus,
+        balance,
+        todo,
+        addQuant,
+        companySituation,
+        tenantId,
+        sector,
+        active,
+        userId,
+        ...(file && { file: file.buffer.toString("base64") }),
+        ...(addTermEntities.length > 0 && { addTerm: addTermEntities }),
+      });
+  
+      await contractRepo.save(newContract);
+  
+      const textNotification = `Contrato ${newContract.name} foi adicionado`;
+      const notification = await processNotification(tenantId, textNotification);
+  
+      res.status(201).send({ contract: newContract, notification });
+  
+    } catch (error) {
+      console.error("Erro ao criar contrato:", error);
+      res.status(500).send({ message: "Erro ao criar contrato!", error });
+    }
+  };
+  
 
 export const listContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
@@ -69,20 +99,27 @@ export const listContracts = async (req: Request, res: Response) => {
 export const listContractId = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-        return res.status(400).send({ error: 'Id invalido.' });
+      return res.status(400).send({ error: 'Id inválido.' });
     }
-
-    const contractPath = AppDataSource.getRepository(Contract);
+  
+    const contractRepo = AppDataSource.getRepository(Contract);
+  
     try {
-        const contract = await contractPath.findOne({ where: { id } });
-        if (!contract) {
-            return res.status(404).send({ error: 'Contrato não encontrado' });
-        }
-        res.status(200).send(contract);
+      const contract = await contractRepo.findOne({
+        where: { id },
+        relations: ['addTerm'],
+      });
+  
+      if (!contract) {
+        return res.status(404).send({ error: 'Contrato não encontrado' });
+      }
+  
+      res.status(200).send(contract);
     } catch (error) {
-        res.status(500).send({ error: 'Internal server error' });
+      res.status(500).send({ error: 'Erro interno no servidor' });
     }
-};
+  };
+  
 
 
 export const list3LastContracts = async (req: Request, res: Response) => {
@@ -130,37 +167,75 @@ export const deleteContract = async (req: Request, res: Response) => {
 }
 
 
-export const updateContract = async (req: Request, res: Response) =>{
+export const updateContract = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
-
-    const { name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus, balance, todo, addTerm, addQuant, companySituation, sector, active,userId, file } = req.body;
-    const tenantId = req.body.tenantId;
-
-    const contractPath = AppDataSource.getRepository(Contract);
-    let updateContract = await contractPath.findOne({where: {id: id, tenantId: tenantId}});
-
-    if(!updateContract){
-        return res.status(404).send({message: "Contrato não encontrado."});
+    const {
+      name, numProcess, numContract, manager, supervisor, initDate, finalDate,
+      contractLaw, contractStatus, balance, todo, addQuant, companySituation,
+      sector, active, userId, file, tenantId, addTerm
+    } = req.body;
+  
+    const contractRepo = AppDataSource.getRepository(Contract);
+    const addTermRepo = AppDataSource.getRepository(AddTerm);
+  
+    let existingContract = await contractRepo.findOne({
+      where: { id, tenantId },
+      relations: ['addTerm'],
+    });
+  
+    if (!existingContract) {
+      return res.status(404).send({ message: "Contrato não encontrado." });
     }
-   updateContract = {
-    ...updateContract,
-        name, numProcess, numContract, manager, supervisor, initDate, finalDate, contractLaw, contractStatus,
-        balance, todo, addTerm, addQuant, companySituation,sector,active, tenantId, userId,
-        ...(file && {file}),
-        
-   }
-
+  
+    Object.assign(existingContract, {
+      name, numProcess, numContract, manager, supervisor, initDate, finalDate,
+      contractLaw, contractStatus, balance, todo, addQuant, companySituation,
+      sector, active, userId, tenantId,
+      ...(file && { file }),
+    });
+  
+    if (addTerm && Array.isArray(addTerm)) {
+      for (const term of addTerm) {
+        if (term.id) {
+          const existingTerm = await addTermRepo.findOne({ where: { id: term.id, contractId: id } });
+          if (existingTerm) {
+            await addTermRepo.save({ ...existingTerm, ...term });
+          }
+        } else {
+          const newTerm = addTermRepo.create({ ...term, contractId: id });
+          await addTermRepo.save(newTerm);
+        }
+      }
+    }
+  
     try {
-        await contractPath.save(updateContract!);
-        var textNotification = `Contrato ${updateContract!.name} foi modificado`;
-
-        const notification = await processNotification(tenantId, textNotification);
-
-        res.status(200).send({contract: updateContract, notification});
-    }catch(e){
-        res.status(500).send({message: "Erro ao atualizar contrato"});
+      await contractRepo.save(existingContract);
+      const textNotification = `Contrato ${existingContract.name} foi modificado`;
+      const notification = await processNotification(tenantId, textNotification);
+  
+      res.status(200).send({ contract: existingContract, notification });
+    } catch (e) {
+      res.status(500).send({ message: "Erro ao atualizar contrato" });
     }
-}
+  };
+  
+  export const deleteAddTerm = async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+  
+    const addTermRepo = AppDataSource.getRepository(AddTerm);
+    const term = await addTermRepo.findOne({ where: { id } });
+  
+    if (!term) {
+      return res.status(404).send({ message: "Termo aditivo não encontrado." });
+    }
+  
+    await addTermRepo.remove(term);
+    return res.status(200).send({ message: "Termo aditivo excluído com sucesso." });
+  };
 
-
-export const uploadAuth = upload.single('file');
+  
+export const uploadAuth = upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'addTerm', maxCount: 10 },
+  ]);
+  
