@@ -218,7 +218,34 @@ export const updateContract = async (req: Request, res: Response) => {
       res.status(500).send({ message: "Erro ao atualizar contrato" });
     }
   };
+  export const createAddTerm = async (req: Request, res: Response) => {
+    const { contractId, tenantId, nameTerm, file } = req.body;
   
+    const contractRepo = AppDataSource.getRepository(Contract);
+    const addTermRepo = AppDataSource.getRepository(AddTerm);
+  
+    const contract = await contractRepo.findOne({ where: { id: contractId, tenantId } });
+  
+    if (!contract) {
+      return res.status(404).json({ message: 'Contrato não encontrado' });
+    }
+  
+    const newAddTerm = addTermRepo.create({
+      nameTerm,
+      file,
+      contract,
+      contractId,
+      tenantId,
+    });
+  
+    try {
+      await addTermRepo.save(newAddTerm);
+      return res.status(201).json(newAddTerm);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ message: 'Erro ao salvar termo aditivo' });
+    }
+  };
   export const deleteAddTerm = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
   

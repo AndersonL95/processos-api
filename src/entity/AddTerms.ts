@@ -10,7 +10,7 @@ export class AddTerm {
   tenantId: number;
 
   @Column()
-  name: string;
+  nameTerm: string;
 
   @Column({ nullable: true })
   file: string;
