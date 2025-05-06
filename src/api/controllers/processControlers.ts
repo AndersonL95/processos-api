@@ -12,7 +12,6 @@ const storage = multer.memoryStorage()
 const upload = multer({storage});
 
 
-
 export const createContract = async (req: Request, res: Response) => {
     try {
       const {
@@ -39,19 +38,16 @@ export const createContract = async (req: Request, res: Response) => {
         [fieldname: string]: Express.Multer.File[];
       };
   
-      const file = files?.file?.[0]; // arquivo principal (opcional)
+      const file = files?.file?.[0];
       const addTermFiles = files?.addTerm || [];
   
-      const addTermEntities = addTermFiles.map((file) => ({
-        file: file.buffer.toString('base64'),
-      }));
-        
       const existContract = await Contract.findOne({ where: { numContract, tenantId } });
       if (existContract) {
         return res.status(409).send({ message: "Contrato já existe!" });
       }
   
       const contractRepo = AppDataSource.getRepository(Contract);
+      const addTermRepo = AppDataSource.getRepository(AddTerm);
   
       const newContract = contractRepo.create({
         name,
@@ -72,15 +68,32 @@ export const createContract = async (req: Request, res: Response) => {
         active,
         userId,
         ...(file && { file: file.buffer.toString("base64") }),
-        ...(addTermEntities.length > 0 && { addTerm: addTermEntities }),
       });
   
       await contractRepo.save(newContract);
   
+      if (addTermFiles.length > 0) {
+        const addTermEntities = addTermFiles.map((file) => {
+          return addTermRepo.create({
+            contract: newContract,
+            contractId: newContract.id,
+            tenantId,
+            file: file.buffer.toString('base64'),
+          });
+        });
+  
+        await addTermRepo.save(addTermEntities);
+      }
+  
       const textNotification = `Contrato ${newContract.name} foi adicionado`;
       const notification = await processNotification(tenantId, textNotification);
   
-      res.status(201).send({ contract: newContract, notification });
+      const createdContract = await contractRepo.findOne({
+        where: { id: newContract.id },
+        relations: ['addTerms'],
+      });
+  
+      res.status(201).send({ contract: createdContract, notification });
   
     } catch (error) {
       console.error("Erro ao criar contrato:", error);
