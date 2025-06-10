@@ -1,9 +1,10 @@
-version: "2.27.0"
+
 
 services:
   postgresdb:
     image: postgres
     restart: unless-stopped
+    container_name: ${POSTGRES_HOST}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

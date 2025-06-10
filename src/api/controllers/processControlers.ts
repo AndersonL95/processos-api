@@ -32,14 +32,11 @@ export const createContract = async (req: Request, res: Response) => {
         active,
         userId,
         tenantId,
+        file: fileBase64,
+        add_term: addTermBase64,
       } = req.body;
   
-      const files = req.files as {
-        [fieldname: string]: Express.Multer.File[];
-      };
-  
-      const file = files?.file?.[0];
-      const addTermFiles = files?.addTerm || [];
+      
   
       const existContract = await Contract.findOne({ where: { numContract, tenantId } });
       if (existContract) {
@@ -48,7 +45,7 @@ export const createContract = async (req: Request, res: Response) => {
   
       const contractRepo = AppDataSource.getRepository(Contract);
       const addTermRepo = AppDataSource.getRepository(AddTerm);
-  
+      const fileBuffer = fileBase64 ? Buffer.from(fileBase64, 'base64') : null;
       const newContract = contractRepo.create({
         name,
         numProcess,
@@ -67,30 +64,32 @@ export const createContract = async (req: Request, res: Response) => {
         sector,
         active,
         userId,
-        ...(file && { file: file.buffer.toString("base64") }),
+        file: fileBuffer?.toString("base64"),
       });
   
       await contractRepo.save(newContract);
   
-      if (addTermFiles.length > 0) {
-        const addTermEntities = addTermFiles.map((file) => {
+      if (addTermBase64?.length > 0) {
+        const addTermEntities = addTermBase64.map((term: { file: any; nameTerm: string }) => {
           return addTermRepo.create({
             contract: newContract,
             contractId: newContract.id,
-            tenantId,
-            file: file.buffer.toString('base64'),
+            tenantId: newContract.tenantId,
+            nameTerm: term.nameTerm,
+            file: term.file, 
           });
         });
-  
-        await addTermRepo.save(addTermEntities);
-      }
+
+      await addTermRepo.save(addTermEntities);
+}
+
   
       const textNotification = `Contrato ${newContract.name} foi adicionado`;
       const notification = await processNotification(tenantId, textNotification);
   
       const createdContract = await contractRepo.findOne({
         where: { id: newContract.id },
-        relations: ['addTerms'],
+        relations: ['add_term'],
       });
   
       res.status(201).send({ contract: createdContract, notification });
@@ -101,6 +100,35 @@ export const createContract = async (req: Request, res: Response) => {
     }
   };
   
+   export const createAddTerm = async (req: Request, res: Response) => {
+    const { contractId, tenantId, nameTerm, file } = req.body;
+  
+    const contractRepo = AppDataSource.getRepository(Contract);
+    const addTermRepo = AppDataSource.getRepository(AddTerm);
+  
+    const contract = await contractRepo.findOne({ where: { id: contractId, tenantId } });
+  
+    if (!contract) {
+      return res.status(404).json({ message: 'Contrato não encontrado' });
+    }
+  
+    const newAddTerm = addTermRepo.create({
+      nameTerm,
+      file,
+      contract,
+      contractId,
+      tenantId,
+    });
+  
+    try {
+      await addTermRepo.save(newAddTerm);
+      return res.status(201).json(newAddTerm);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ message: 'Erro ao salvar termo aditivo' });
+    }
+  };
+
 
 export const listContracts = async (req: Request, res: Response) => {
     const contractPath = AppDataSource.getRepository(Contract);
@@ -120,7 +148,7 @@ export const listContractId = async (req: Request, res: Response) => {
     try {
       const contract = await contractRepo.findOne({
         where: { id },
-        relations: ['addTerm'],
+        relations: ['add_term'],
       });
   
       if (!contract) {
@@ -185,7 +213,7 @@ export const updateContract = async (req: Request, res: Response) => {
     const {
       name, numProcess, numContract, manager, supervisor, initDate, finalDate,
       contractLaw, contractStatus, balance, todo, addQuant, companySituation,
-      sector, active, userId, file, tenantId, addTerm
+      sector, active, userId, file, tenantId, add_term
     } = req.body;
   
     const contractRepo = AppDataSource.getRepository(Contract);
@@ -193,7 +221,7 @@ export const updateContract = async (req: Request, res: Response) => {
   
     let existingContract = await contractRepo.findOne({
       where: { id, tenantId },
-      relations: ['addTerm'],
+      relations: ['add_term'],
     });
   
     if (!existingContract) {
@@ -207,8 +235,8 @@ export const updateContract = async (req: Request, res: Response) => {
       ...(file && { file }),
     });
   
-    if (addTerm && Array.isArray(addTerm)) {
-      for (const term of addTerm) {
+    if (add_term && Array.isArray(add_term)) {
+      for (const term of add_term) {
         if (term.id) {
           const existingTerm = await addTermRepo.findOne({ where: { id: term.id, contractId: id } });
           if (existingTerm) {
@@ -231,34 +259,7 @@ export const updateContract = async (req: Request, res: Response) => {
       res.status(500).send({ message: "Erro ao atualizar contrato" });
     }
   };
-  export const createAddTerm = async (req: Request, res: Response) => {
-    const { contractId, tenantId, nameTerm, file } = req.body;
-  
-    const contractRepo = AppDataSource.getRepository(Contract);
-    const addTermRepo = AppDataSource.getRepository(AddTerm);
-  
-    const contract = await contractRepo.findOne({ where: { id: contractId, tenantId } });
-  
-    if (!contract) {
-      return res.status(404).json({ message: 'Contrato não encontrado' });
-    }
-  
-    const newAddTerm = addTermRepo.create({
-      nameTerm,
-      file,
-      contract,
-      contractId,
-      tenantId,
-    });
-  
-    try {
-      await addTermRepo.save(newAddTerm);
-      return res.status(201).json(newAddTerm);
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({ message: 'Erro ao salvar termo aditivo' });
-    }
-  };
+ 
   export const deleteAddTerm = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
   
@@ -276,6 +277,6 @@ export const updateContract = async (req: Request, res: Response) => {
   
 export const uploadAuth = upload.fields([
     { name: 'file', maxCount: 1 },
-    { name: 'addTerm', maxCount: 10 },
+    { name: 'add_term', maxCount: 10 },
   ]);
   

@@ -1,22 +1,23 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Version51746487468002 implements MigrationInterface {
+export class Version61746487468002 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-            CREATE TABLE "addTerm" (
+            CREATE TABLE "add_term" (
                 "id" SERIAL PRIMARY KEY,
                 "tenantId" INTEGER NOT NULL,
                 "contractId" INTEGER NOT NULL,
-                "name" character varying NOT NULL,
+                "nameTerm" character varying NOT NULL,
+                "file" character varying,
                 "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT "FK_contract_addTerms" FOREIGN KEY ("contractId") REFERENCES "contract"("id") ON DELETE CASCADE
+                CONSTRAINT "FK_contract_add_term" FOREIGN KEY ("contractId") REFERENCES "contract"("id") ON DELETE CASCADE
             )
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE "addTerm"`);
+        await queryRunner.query(`DROP TABLE "add_term"`);
 
     }
 

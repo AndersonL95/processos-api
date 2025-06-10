@@ -56,8 +56,8 @@ export class Contract extends BaseEntity {
     @Length(11, 30)
     todo: string;
 
-    @OneToMany(() => AddTerm, (addTerm) => addTerm.contract, { cascade: true })
-    addTerm: AddTerm[];
+    @OneToMany(() => AddTerm, (add_term) => add_term.contract, { cascade: true })
+    add_term?: AddTerm[];
 
     
 
