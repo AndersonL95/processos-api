@@ -8,12 +8,13 @@ export const createAdmin = async () => {
     if (userCount === 0) {
       console.log("Tabela de usuários está vazia. Criando usuário administrador...");
 
-      const adminPassword = process.env.ADMIN_PASS || '6003c408beda28988890f085d91';
+      const adminPassword = process.env.ADMIN_PASS;
+      const adminEmail = process.env.ADMIN_EMAIL;
 
       const userAdmin = User.create({
         username: 'admin',
         name: 'Administrador',
-        email: 'admin@example.com',
+        email: adminEmail,
         password: adminPassword,
         phone: '1234567890',
         cpf: '000.000.000-00',
