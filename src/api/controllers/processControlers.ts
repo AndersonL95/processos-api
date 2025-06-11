@@ -223,6 +223,7 @@ export const updateContract = async (req: Request, res: Response) => {
       where: { id, tenantId },
       relations: ['add_term'],
     });
+    
   
     if (!existingContract) {
       return res.status(404).send({ message: "Contrato não encontrado." });
@@ -236,6 +237,13 @@ export const updateContract = async (req: Request, res: Response) => {
     });
   
     if (add_term && Array.isArray(add_term)) {
+      const updatedTermIds = add_term.filter((term: any) => term.id).map((term: any) => term.id);
+      const existingTerms = existingContract?.add_term ?? [];
+      const termsToDelete = existingTerms.filter(term => !updatedTermIds.includes(term.id));
+      for (const term of termsToDelete) {
+        await addTermRepo.delete(term.id);
+      }
+    
       for (const term of add_term) {
         if (term.id) {
           const existingTerm = await addTermRepo.findOne({ where: { id: term.id, contractId: id } });
@@ -243,11 +251,12 @@ export const updateContract = async (req: Request, res: Response) => {
             await addTermRepo.save({ ...existingTerm, ...term });
           }
         } else {
-          const newTerm = addTermRepo.create({ ...term, contractId: id });
+          const newTerm = addTermRepo.create({ ...term, contractId: id, tenantId });
           await addTermRepo.save(newTerm);
         }
       }
-    }
+}
+
   
     try {
       await contractRepo.save(existingContract);

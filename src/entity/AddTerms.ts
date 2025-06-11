@@ -15,7 +15,7 @@ export class AddTerm {
   @Column({ nullable: true })
   file: string;
 
-  @ManyToOne(() => Contract, (contract) => contract.add_term, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Contract, (contract) => contract.add_term, { onDelete: 'CASCADE', })
   contract: Contract;
 
   @Column()
