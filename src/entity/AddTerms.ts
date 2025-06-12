@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 import { Contract } from "./Process";
 
 @Entity()
@@ -15,7 +15,10 @@ export class AddTerm {
   @Column({ nullable: true })
   file: string;
 
-  @ManyToOne(() => Contract, (contract) => contract.add_term, { onDelete: 'CASCADE', })
+  @ManyToOne(() => Contract, (contract) => contract.add_term, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'contractId' }) // 🔥 ESSENCIAL
   contract: Contract;
 
   @Column()

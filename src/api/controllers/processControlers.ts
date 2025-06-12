@@ -244,17 +244,35 @@ export const updateContract = async (req: Request, res: Response) => {
         await addTermRepo.delete(term.id);
       }
     
-      for (const term of add_term) {
-        if (term.id) {
-          const existingTerm = await addTermRepo.findOne({ where: { id: term.id, contractId: id } });
-          if (existingTerm) {
-            await addTermRepo.save({ ...existingTerm, ...term });
-          }
-        } else {
-          const newTerm = addTermRepo.create({ ...term, contractId: id, tenantId });
-          await addTermRepo.save(newTerm);
-        }
-      }
+   for (const term of add_term) {
+  if (term.id && typeof term.id === 'number') {
+    
+    const existingTerm = await addTermRepo.findOne({ where: { id: term.id } });
+
+    if (existingTerm) {
+      await addTermRepo.save({
+        id: term.id,
+        tenantId,
+        contractId: id,
+        nameTerm: term.nameTerm,
+        file: term.file,
+      });
+    }
+  } else {
+    
+    const newTerm = addTermRepo.create({
+      nameTerm: term.nameTerm,
+      file: term.file,
+      contractId: id,
+      tenantId,
+    });
+
+    await addTermRepo.save(newTerm);
+  }
+}
+
+
+
 }
 
   

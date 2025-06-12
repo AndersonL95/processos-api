@@ -70,7 +70,7 @@ export class Contract extends BaseEntity {
     companySituation: string;
 
     @Column()
-    @Length(10,20)
+    @Length(3,20)
     active: string;
 
     @Column()
@@ -84,7 +84,7 @@ export class Contract extends BaseEntity {
    @Column()
    userId: number;
 
-   @Column({type:"text"})
+   @Column({type:"text", nullable: true})
    file: string;
     
    
