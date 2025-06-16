@@ -131,12 +131,17 @@ export const createContract = async (req: Request, res: Response) => {
 
 
 export const listContracts = async (req: Request, res: Response) => {
-    const contractPath = AppDataSource.getRepository(Contract);
-    const tenantId = req.body.tenantId;
+  const contractPath = AppDataSource.getRepository(Contract);
+  const tenantId = req.body.tenantId;
 
-    const contracts = await contractPath.find({where:{tenantId: tenantId}});
-    res.status(200).send(contracts);
-}
+  const contracts = await contractPath.find({
+    where: { tenantId },
+    relations: ['add_term'], 
+  });
+
+  res.status(200).send(contracts);
+};
+
 export const listContractId = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -243,41 +248,32 @@ export const updateContract = async (req: Request, res: Response) => {
       for (const term of termsToDelete) {
         await addTermRepo.delete(term.id);
       }
-    
-   for (const term of add_term) {
-  if (term.id && typeof term.id === 'number') {
-    
-    const existingTerm = await addTermRepo.findOne({ where: { id: term.id } });
-
-    if (existingTerm) {
-      await addTermRepo.save({
-        id: term.id,
-        tenantId,
-        contractId: id,
-        nameTerm: term.nameTerm,
-        file: term.file,
-      });
+      for (const term of add_term) {
+       if (term.id && typeof term.id === 'number') {
+         const existingTerm = await addTermRepo.findOne({ where: { id: term.id } });
+         if (existingTerm) {
+           await addTermRepo.save({
+             id: term.id,
+             tenantId,
+             contractId: id,
+             nameTerm: term.nameTerm,
+             file: term.file,
+           });
+         }
+         } else {
+             await addTermRepo.insert({
+               tenantId,
+               contractId: id, 
+               nameTerm: term.nameTerm,
+               file: term.file
+             });
+         }
+     }
     }
-  } else {
-    
-    const newTerm = addTermRepo.create({
-      nameTerm: term.nameTerm,
-      file: term.file,
-      contractId: id,
-      tenantId,
-    });
-
-    await addTermRepo.save(newTerm);
-  }
-}
-
-
-
-}
-
-  
     try {
+      delete existingContract.add_term;
       await contractRepo.save(existingContract);
+      
       const textNotification = `Contrato ${existingContract.name} foi modificado`;
       const notification = await processNotification(tenantId, textNotification);
   

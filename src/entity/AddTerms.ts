@@ -14,13 +14,13 @@ export class AddTerm {
 
   @Column({ nullable: true })
   file: string;
-
   @ManyToOne(() => Contract, (contract) => contract.add_term, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'contractId' }) // 🔥 ESSENCIAL
+  @JoinColumn({ name: 'contractId' })
   contract: Contract;
 
   @Column()
-  contractId: number;
+  contractId: number; 
+
 }
