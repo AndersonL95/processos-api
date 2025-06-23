@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { Contract } from "./Process";
 
 @Entity()
@@ -22,5 +22,11 @@ export class AddTerm {
 
   @Column()
   contractId: number; 
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
 
 }

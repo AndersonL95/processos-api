@@ -131,17 +131,60 @@ export const createContract = async (req: Request, res: Response) => {
 
 
 export const listContracts = async (req: Request, res: Response) => {
-  const contractPath = AppDataSource.getRepository(Contract);
+  const contractRepo = AppDataSource.getRepository(Contract);
   const tenantId = req.body.tenantId;
 
-  const contracts = await contractPath.find({
-    where: { tenantId },
-    relations: ['add_term'], 
-  });
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const skip = (page - 1) * limit;
 
-  res.status(200).send(contracts);
+  try {
+    const [contracts, total] = await contractRepo.findAndCount({
+      where: { tenantId },
+      relations: ['add_term'],
+      take: limit,
+      skip,
+      order: { id: 'DESC' }, 
+    });
+  
+
+    return res.status(200).json({
+      data: contracts,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao listar contratos', error });
+  }
 };
 
+export const listNotTermContract = async (req: Request, res: Response) => {
+  const contractRepo = AppDataSource.getRepository(Contract);
+  const tenantId = req.body.tenantId;
+
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const skip = (page - 1) * limit;
+  try {
+    const [contracts, total] = await contractRepo.findAndCount({
+      where: { tenantId },
+      take: limit,
+      skip,
+      order: { id: 'DESC' }, 
+    });
+  
+    console.log("RES: ", total);
+    return res.status(200).json({
+      data: contracts,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao listar contratos', error });
+  }
+};
 export const listContractId = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
