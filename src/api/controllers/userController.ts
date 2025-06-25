@@ -35,24 +35,81 @@ export const createUser = async (req: Request, res: Response) =>{
 };
 
 export const listUsers = async (req: Request, res: Response) => {
-    try {
-        const users = await User.find({where: {tenantId: req.body.tenantId}});
-        res.status(200).send(users);
-    } catch (error) {
-        res.status(500).send({message: 'Erro ao tentar buscar os usuarios!', error});
+  try {
+    const tenantId = req.body.tenantId;
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const search = (req.query.search as string)?.toLowerCase() || '';
+
+    const queryBuilder = User.createQueryBuilder('user')
+      .where('user.tenantId = :tenantId', { tenantId });
+
+    if (search) {
+      queryBuilder.andWhere(`
+        LOWER(user.name) LIKE :search 
+        OR LOWER(user.email) LIKE :search
+        OR user.phone LIKE :search
+        OR user.cargo LIKE :search
+        OR user.username LIKE :search
+      `, { search: `%${search}%` });
     }
-    
+
+    const [users, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    res.status(200).json({
+      data: users,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao tentar buscar os usuários!', error });
+  }
 };
 
+
 export const listUsersInAdmin = async (req: Request, res: Response) => {
-    try {
-        const users = await User.find();
-        res.status(200).send(users);
-    } catch (error) {
-        res.status(500).send({message: 'Erro ao tentar buscar os usuarios!', error});
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const search = (req.query.search as string)?.toLowerCase() || '';
+
+    const queryBuilder = User.createQueryBuilder('user');
+
+    if (search) {
+      queryBuilder.where(`
+        LOWER(user.name) LIKE :search 
+        OR LOWER(user.email) LIKE :search
+        OR user.phone LIKE :search
+        OR user.cargo LIKE :search
+        OR user.username LIKE :search
+      `, { search: `%${search}%` });
     }
-    
+
+    const [users, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    res.status(200).json({
+      data: users,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao tentar buscar os usuários!', error });
+  }
 };
+
 
 export const getUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
