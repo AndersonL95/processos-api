@@ -166,15 +166,31 @@ export const listNotTermContract = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const skip = (page - 1) * limit;
+  const search = (req.query.search as string)?.toLowerCase() || '';
+
   try {
-    const [contracts, total] = await contractRepo.findAndCount({
-      where: { tenantId },
-      take: limit,
-      skip,
-      order: { id: 'DESC' }, 
-    });
-  
-    console.log("RES: ", total);
+    const queryBuilder = contractRepo
+      .createQueryBuilder('contract')
+      .where('contract.tenantId = :tenantId', { tenantId });
+    
+    if (search) {
+      queryBuilder.andWhere(
+        `LOWER(contract.name) LIKE :search 
+         OR LOWER(contract.manager) LIKE :search 
+         OR LOWER(contract.supervisor) LIKE :search 
+         OR contract.numContract LIKE :search 
+         OR contract.numProcess LIKE :search`,
+        { search: `%${search}%` }
+      );
+      
+    }
+
+    queryBuilder.orderBy('contract.id', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    const [contracts, total] = await queryBuilder.getManyAndCount();
+
     return res.status(200).json({
       data: contracts,
       total,
@@ -185,6 +201,7 @@ export const listNotTermContract = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Erro ao listar contratos', error });
   }
 };
+
 export const listContractId = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -339,6 +356,67 @@ export const updateContract = async (req: Request, res: Response) => {
     await addTermRepo.remove(term);
     return res.status(200).send({ message: "Termo aditivo excluído com sucesso." });
   };
+export const filterContract = async (req: Request, res: Response) => {
+  const contractRepo = AppDataSource.getRepository(Contract);
+  const tenantId = req.body.tenantId;
+  const sector = (req.query.sector as string)?.toLowerCase() || '';
+  const sort = (req.query.sort as string)?.toLowerCase() || '';
+  const daysLeft = req.query.daysLeft as string;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 1000; // retorno "sem paginação"
+  const skip = (page - 1) * limit;
+
+  try {
+    const queryBuilder = contractRepo
+      .createQueryBuilder('contract')
+      .where('contract.tenantId = :tenantId', { tenantId });
+
+   
+
+    if (sector) {
+      queryBuilder.andWhere('LOWER(contract.sector) = :sector', { sector });
+    }
+
+    if (daysLeft) {
+      const today = new Date();
+      const futureDate = new Date();
+      futureDate.setDate(today.getDate() + parseInt(daysLeft));
+      queryBuilder.andWhere('contract.finalDate <= :futureDate', {
+        futureDate: futureDate.toISOString(),
+      });
+    }
+
+    
+    if (sort === 'data ini. - cresc.') {
+      queryBuilder.orderBy('contract.initialDate', 'ASC');
+    } else if (sort === 'data ini. - decrs.') {
+      queryBuilder.orderBy('contract.initialDate', 'DESC');
+    } else if (sort === 'data fin. - cresc.') {
+      queryBuilder.orderBy('contract.finalDate', 'ASC');
+    } else if (sort === 'data fin. - decrs.') {
+      queryBuilder.orderBy('contract.finalDate', 'DESC');
+    } else {
+      queryBuilder.orderBy('contract.id', 'DESC'); 
+    }
+
+    queryBuilder.skip(skip).take(limit);
+
+    const [contracts, total] = await queryBuilder.getManyAndCount();
+
+    return res.status(200).json({
+      data: contracts,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error('Erro no filtro:', error);
+    return res.status(500).json({
+      message: 'Erro ao filtrar contratos',
+      error,
+    });
+  }
+};
 
   
 export const uploadAuth = upload.fields([
