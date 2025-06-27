@@ -22,6 +22,8 @@ app.use('/api',userRoutes);
 app.use('/api',contractRoutes);
 app.use('/api', sectorRoutes);
 app.use('/api', notificationRoutes);
+app.use(express.static('public'));
+
 
 app.get('/', (req: Request, res: Response)=>{
     res.send("Server funcionando...")
