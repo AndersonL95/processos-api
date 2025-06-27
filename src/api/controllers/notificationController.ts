@@ -72,7 +72,7 @@ export const listNotifications = async (req: Request, res: Response) => {
                 ...not,
                 read: useNotifications ? useNotifications.read : false
             };
-        });
+        }).filter((not) => not.read === false);
 
         res.status(200).json({notifications: response});
     }catch(e){

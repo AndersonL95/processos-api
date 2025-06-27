@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import {Length} from 'class-validator';
 import { User } from './User';
+import { AddTerm } from './AddTerms';
 
 @Entity('contract')
 export class Contract extends BaseEntity {
@@ -55,9 +56,10 @@ export class Contract extends BaseEntity {
     @Length(11, 30)
     todo: string;
 
-    @Column()
-    @Length(11, 30)
-    addTerm: string;
+    @OneToMany(() => AddTerm, (add_term) => add_term.contract, { cascade: true, onDelete: 'CASCADE' })
+    add_term?: AddTerm[];
+
+    
 
     @Column()
     @Length(11, 30)
@@ -68,7 +70,7 @@ export class Contract extends BaseEntity {
     companySituation: string;
 
     @Column()
-    @Length(10,20)
+    @Length(3,20)
     active: string;
 
     @Column()
@@ -82,7 +84,7 @@ export class Contract extends BaseEntity {
    @Column()
    userId: number;
 
-   @Column({type:"text"})
+   @Column({type:"text", nullable: true})
    file: string;
     
    
