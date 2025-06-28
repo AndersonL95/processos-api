@@ -221,7 +221,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     expiresAt
   }).save();
 
-  const resetLink = `https://docInHand.com/resetar-senha?token=${token}`;
+  const resetLink = `http://localhost:3000/reset_pass?token=${token}`;
   console.log("Enviar e-mail com o link:", resetLink); 
   await sendResetEmail(user.email, resetLink);
   return res.json({ message: "Link de redefinição enviado." });
@@ -239,6 +239,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
   if (!resetToken || resetToken.expiresAt < new Date())
     return res.status(400).json({ message: "Token inválido ou expirado" });
+  
 
   const hashed = await bcrypt.hash(newPassword, 10);
   resetToken.user.password = hashed;

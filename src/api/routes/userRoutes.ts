@@ -2,11 +2,11 @@ import { Router } from "express";
 import { createUser, deleteUser, forgotPassword, getUser, listUsers, listUsersInAdmin, resetPassword, updateUser, uploadUserAuth } from '../controllers/userController';
 import { tokenAuth } from "../auth/auth";
 import { tenantAuth } from "../auth/tenantAuth";
+import path from "path";
 
 const router = Router();
 
 router.post('/users',tenantAuth, createUser, uploadUserAuth);
-
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword)
 router.use(tokenAuth);
