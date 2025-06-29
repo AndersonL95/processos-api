@@ -13,7 +13,7 @@ dotenv.config();
 const app: Express = express();
 const PORT = parseInt(process.env.NODE_PORT || '3000', 10);
 
-app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(bodyParser.json({limit:"50mb"}));
 app.use(bodyParser.urlencoded({limit: '50mb',extended:true}))
 app.use('/uploads', express.static(path.join(__dirname,'./uploads')));
@@ -22,6 +22,7 @@ app.use('/api',userRoutes);
 app.use('/api',contractRoutes);
 app.use('/api', sectorRoutes);
 app.use('/api', notificationRoutes);
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/reset_pass', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/reset_password.html'));
 });

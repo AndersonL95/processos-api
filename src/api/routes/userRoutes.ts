@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createUser, deleteUser, forgotPassword, getUser, listUsers, listUsersInAdmin, resetPassword, updateUser, uploadUserAuth } from '../controllers/userController';
+import { changePassword, createUser, deleteUser, forgotPassword, getUser, listUsers, listUsersInAdmin, resetPassword, updateUser, uploadUserAuth } from '../controllers/userController';
 import { tokenAuth } from "../auth/auth";
 import { tenantAuth } from "../auth/tenantAuth";
 import path from "path";
@@ -16,6 +16,7 @@ router.get("/users_admin", listUsersInAdmin);
 router.get("/users/:id",tenantAuth, getUser);
 router.put("/users/:id", tenantAuth,updateUser);
 router.delete("/users/:id", tenantAuth,deleteUser);
+router.post("/change_pass/:id", tenantAuth, changePassword);
 
 
 export default router;

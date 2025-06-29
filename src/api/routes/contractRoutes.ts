@@ -1,10 +1,11 @@
 import express from 'express';
 import { createContract, deleteContract, filterContract, list3LastContracts, listContractId, /*listContractId,*/ listContracts, listNotTermContract, updateContract, uploadAuth  } from '../controllers/processControlers';
 import { tenantAuth } from '../auth/tenantAuth';
+import { tokenAuth } from '../auth/auth';
 
 const router = express.Router();
 
-
+router.use(tokenAuth);
 router.post('/contract',tenantAuth, uploadAuth, createContract);
 router.get('/contract',tenantAuth, listContracts);
 router.get('/contractNotTerm',tenantAuth, listNotTermContract);

@@ -249,5 +249,35 @@ export const resetPassword = async (req: Request, res: Response) => {
   await resetToken.save();
 
   return res.json({ message: "Senha redefinida com sucesso" });
+  
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = parseInt(req.params.id);
+  const tenantId = req.body.tenantId;
+
+  try {
+    const user = await User.findOneBy({ id: userId, tenantId: tenantId });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Senha atual incorreta." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Senha atualizada com sucesso." });
+  } catch (error) {
+    return res.status(500).json({ message: "Erro ao trocar a senha." });
+  }
 };
  export const uploadUserAuth = upload.single('photo');
