@@ -22,6 +22,12 @@ app.use('/api',userRoutes);
 app.use('/api',contractRoutes);
 app.use('/api', sectorRoutes);
 app.use('/api', notificationRoutes);
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/reset_pass', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/reset_password.html'));
+});
+
+
 
 app.get('/', (req: Request, res: Response)=>{
     res.send("Server funcionando...")

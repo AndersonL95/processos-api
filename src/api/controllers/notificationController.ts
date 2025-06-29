@@ -12,11 +12,13 @@ export const processNotification = async (tenantId: number, text: string) => {
     const userNotificationRepository = AppDataSource.getRepository(UserNotification);
     const userRepo = AppDataSource.getRepository(User);
 
-    const expiresIn30 = await contractRepo.find({
-        where: {
-            finalDate: MoreThanOrEqual(new Date(new Date().setMonth(new Date().getMonth() + 1))),
-        }
-    });
+   const expiresIn30 = await contractRepo.find({
+  where: {
+    tenantId: tenantId, 
+    finalDate: MoreThanOrEqual(new Date(new Date().setMonth(new Date().getMonth() + 1))),
+  }
+});
+
 
     for (const contract of expiresIn30) {
         const existingNotification = await notificationRepository.findOne({
@@ -54,7 +56,7 @@ export const listNotifications = async (req: Request, res: Response) => {
     const tenantId = req.body.tenantId;
     const userId = parseInt(req.params.userId);
     try{
-        await processNotification(tenantId,"");
+       
         const notificationRepo = AppDataSource.getRepository(Notification);
         const userNotificationRepo = AppDataSource.getRepository(UserNotification);
         const notification = await notificationRepo.find({

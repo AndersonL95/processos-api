@@ -4,6 +4,9 @@ import { User } from '../../entity/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
+import { randomBytes } from 'crypto';
+import { PasswordResetToken } from '../../entity/PasswordReset';
+import { sendResetEmail } from '../../send_email.service';
 
 dotenv.config();
 
@@ -118,7 +121,7 @@ export const getUser = async (req: Request, res: Response) => {
     if(!user) return res.status(404).send("Usuario não encontrado.");
     res.send(user);
     
-}
+};
 
 export const updateUser = async (req: Request, res: Response) => {
     const userID = parseInt(req.params.id);
@@ -174,7 +177,7 @@ export const login = async (req: Request, res: Response) => {
     await user.save();
     
     res.send({ accessToken, refreshToken, id: user.id, tenantId: user.tenantId, role: user.role});
-}
+};
 
  export const refreshToken = async (req: Request, res: Response) => {
     const { token } = req.body;
@@ -201,4 +204,80 @@ export const login = async (req: Request, res: Response) => {
  
 
 
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ where: { email } });
+
+  if (!user) {
+    return res.status(200).json({ message: "Se o e-mail existir, enviaremos instruções" });
+  }
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 30); 
+  await PasswordResetToken.create({
+    token,
+    user,
+    tenantId: user.tenantId,
+    expiresAt
+  }).save();
+
+  const resetLink = `http://localhost:3000/reset_pass?token=${token}`;
+  console.log("Enviar e-mail com o link:", resetLink); 
+  await sendResetEmail(user.email, resetLink);
+  return res.json({ message: "Link de redefinição enviado." });
+};
+
+
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token, newPassword } = req.body;
+
+  const resetToken = await PasswordResetToken.findOne({
+    where: { token, used: false },
+    relations: ["user"]
+  });
+
+  if (!resetToken || resetToken.expiresAt < new Date())
+    return res.status(400).json({ message: "Token inválido ou expirado" });
+  
+
+  const hashed = await bcrypt.hash(newPassword, 10);
+  resetToken.user.password = hashed;
+  await resetToken.user.save();
+
+  resetToken.used = true;
+  await resetToken.save();
+
+  return res.json({ message: "Senha redefinida com sucesso" });
+  
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = parseInt(req.params.id);
+  const tenantId = req.body.tenantId;
+
+  try {
+    const user = await User.findOneBy({ id: userId, tenantId: tenantId });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Senha atual incorreta." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Senha atualizada com sucesso." });
+  } catch (error) {
+    return res.status(500).json({ message: "Erro ao trocar a senha." });
+  }
+};
  export const uploadUserAuth = upload.single('photo');
