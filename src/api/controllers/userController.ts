@@ -40,23 +40,23 @@ export const createUser = async (req: Request, res: Response) =>{
 export const listUsers = async (req: Request, res: Response) => {
   try {
     const tenantId = req.body.tenantId;
+    
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
     const search = (req.query.search as string)?.toLowerCase() || '';
-
     const queryBuilder = User.createQueryBuilder('user')
       .where('user.tenantId = :tenantId', { tenantId });
 
-    if (search) {
-      queryBuilder.andWhere(`
+   if (search) {
+    queryBuilder.andWhere(`(
       LOWER(user.name) LIKE :search 
       OR LOWER(user.email) LIKE :search
       OR user.phone LIKE :search
       OR LOWER(user.cargo) LIKE :search
       OR LOWER(user.username) LIKE :search
-  `, { search: `%${search}%` });
+  )`, { search: `%${search}%` });
 }
 
 
@@ -71,7 +71,6 @@ export const listUsers = async (req: Request, res: Response) => {
       page,
       lastPage: Math.ceil(total / limit),
     });
-
   } catch (error) {
     res.status(500).json({ message: 'Erro ao tentar buscar os usuários!', error });
   }

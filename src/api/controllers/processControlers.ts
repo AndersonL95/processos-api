@@ -174,12 +174,13 @@ export const listNotTermContract = async (req: Request, res: Response) => {
       .where('contract.tenantId = :tenantId', { tenantId });
     
     if (search) {
-      queryBuilder.andWhere(
-        `LOWER(contract.name) LIKE :search 
+      queryBuilder.andWhere(`(
+        LOWER(contract.name) LIKE :search 
          OR LOWER(contract.manager) LIKE :search 
          OR LOWER(contract.supervisor) LIKE :search 
          OR contract.numContract LIKE :search 
-         OR contract.numProcess LIKE :search`,
+         OR contract.numProcess LIKE :search
+      )`,
         { search: `%${search}%` }
       );
       
