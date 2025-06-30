@@ -51,13 +51,14 @@ export const listUsers = async (req: Request, res: Response) => {
 
     if (search) {
       queryBuilder.andWhere(`
-        LOWER(user.name) LIKE :search 
-        OR LOWER(user.email) LIKE :search
-        OR user.phone LIKE :search
-        OR user.cargo LIKE :search
-        OR user.username LIKE :search
-      `, { search: `%${search}%` });
-    }
+      LOWER(user.name) LIKE :search 
+      OR LOWER(user.email) LIKE :search
+      OR user.phone LIKE :search
+      OR LOWER(user.cargo) LIKE :search
+      OR LOWER(user.username) LIKE :search
+  `, { search: `%${search}%` });
+}
+
 
     const [users, total] = await queryBuilder
       .skip(skip)
@@ -86,15 +87,16 @@ export const listUsersInAdmin = async (req: Request, res: Response) => {
 
     const queryBuilder = User.createQueryBuilder('user');
 
-    if (search) {
-      queryBuilder.where(`
-        LOWER(user.name) LIKE :search 
-        OR LOWER(user.email) LIKE :search
-        OR user.phone LIKE :search
-        OR user.cargo LIKE :search
-        OR user.username LIKE :search
-      `, { search: `%${search}%` });
-    }
+   if (search) {
+      queryBuilder.andWhere(`
+      LOWER(user.name) LIKE :search 
+      OR LOWER(user.email) LIKE :search
+      OR user.phone LIKE :search
+      OR LOWER(user.cargo) LIKE :search
+      OR LOWER(user.username) LIKE :search
+  `, { search: `%${search}%` });
+}
+
 
     const [users, total] = await queryBuilder
       .skip(skip)
@@ -222,7 +224,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }).save();
 
   const resetLink = `http://localhost:3000/reset_pass?token=${token}`;
-  console.log("Enviar e-mail com o link:", resetLink); 
   await sendResetEmail(user.email, resetLink);
   return res.json({ message: "Link de redefinição enviado." });
 };
