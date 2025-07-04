@@ -23,6 +23,9 @@ export class AddTerm {
   @Column()
   contractId: number; 
 
+  @Column()
+  newTermDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
   

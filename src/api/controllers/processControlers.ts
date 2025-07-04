@@ -70,13 +70,14 @@ export const createContract = async (req: Request, res: Response) => {
       await contractRepo.save(newContract);
   
       if (addTermBase64?.length > 0) {
-        const addTermEntities = addTermBase64.map((term: { file: any; nameTerm: string }) => {
+        const addTermEntities = addTermBase64.map((term: { file: any; nameTerm: string; newTermDate: string }) => {
           return addTermRepo.create({
             contract: newContract,
             contractId: newContract.id,
             tenantId: newContract.tenantId,
             nameTerm: term.nameTerm,
             file: term.file, 
+            newTermDate: term.newTermDate
           });
         });
 
@@ -101,7 +102,7 @@ export const createContract = async (req: Request, res: Response) => {
   };
   
    export const createAddTerm = async (req: Request, res: Response) => {
-    const { contractId, tenantId, nameTerm, file } = req.body;
+    const { contractId, tenantId, nameTerm, file, newTermDate } = req.body;
   
     const contractRepo = AppDataSource.getRepository(Contract);
     const addTermRepo = AppDataSource.getRepository(AddTerm);
@@ -115,6 +116,7 @@ export const createContract = async (req: Request, res: Response) => {
     const newAddTerm = addTermRepo.create({
       nameTerm,
       file,
+      newTermDate,
       contract,
       contractId,
       tenantId,
@@ -130,7 +132,7 @@ export const createContract = async (req: Request, res: Response) => {
   };
 
 
-export const listContracts = async (req: Request, res: Response) => {
+export const listContractsLight = async (req: Request, res: Response) => {
   const contractRepo = AppDataSource.getRepository(Contract);
   const tenantId = req.body.tenantId;
 
@@ -144,20 +146,27 @@ export const listContracts = async (req: Request, res: Response) => {
       relations: ['add_term'],
       take: limit,
       skip,
-      order: { id: 'DESC' }, 
+      order: { id: 'DESC' },
     });
-  
+    const lightContracts = contracts.map(contract => ({
+      ...contract,
+      add_term: contract.add_term?.map(term => {
+        const { id, nameTerm, newTermDate, contractId } = term;
+        return { id, nameTerm, newTermDate, contractId };
+      }) || []
+    }));
 
     return res.status(200).json({
-      data: contracts,
+      data: lightContracts,
       total,
       page,
       lastPage: Math.ceil(total / limit),
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Erro ao listar contratos', error });
+    return res.status(500).json({ message: 'Erro ao listar contratos (light)', error });
   }
 };
+
 
 export const listNotTermContract = async (req: Request, res: Response) => {
   const contractRepo = AppDataSource.getRepository(Contract);
@@ -310,6 +319,7 @@ export const updateContract = async (req: Request, res: Response) => {
         await addTermRepo.delete(term.id);
       }
       for (const term of add_term) {
+        console.log("DATETERM: ", term.newTermDate);
        if (term.id && typeof term.id === 'number') {
          const existingTerm = await addTermRepo.findOne({ where: { id: term.id } });
          if (existingTerm) {
@@ -319,6 +329,7 @@ export const updateContract = async (req: Request, res: Response) => {
              contractId: id,
              nameTerm: term.nameTerm,
              file: term.file,
+             newTermDate: term.newTermDate
            });
          }
          } else {
@@ -326,9 +337,11 @@ export const updateContract = async (req: Request, res: Response) => {
                tenantId,
                contractId: id, 
                nameTerm: term.nameTerm,
-               file: term.file
+               file: term.file,
+               newTermDate: term.newTermDate
              });
          }
+         
      }
     }
     try {
