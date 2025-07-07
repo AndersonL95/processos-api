@@ -132,10 +132,11 @@ export const createContract = async (req: Request, res: Response) => {
   };
 
 
-export const listContractsLight = async (req: Request, res: Response) => {
+export const listContracts = async (req: Request, res: Response) => {
   const contractRepo = AppDataSource.getRepository(Contract);
   const tenantId = req.body.tenantId;
 
+  const all = req.query.all === 'true'; // novo
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const skip = (page - 1) * limit;
@@ -144,28 +145,33 @@ export const listContractsLight = async (req: Request, res: Response) => {
     const [contracts, total] = await contractRepo.findAndCount({
       where: { tenantId },
       relations: ['add_term'],
-      take: limit,
-      skip,
       order: { id: 'DESC' },
+      ...(all ? {} : { take: limit, skip }), 
     });
-    const lightContracts = contracts.map(contract => ({
-      ...contract,
-      add_term: contract.add_term?.map(term => {
-        const { id, nameTerm, newTermDate, contractId } = term;
-        return { id, nameTerm, newTermDate, contractId };
-      }) || []
-    }));
+
+    const lightContracts = contracts.map(contract => {
+      const { file, add_term, ...rest } = contract;
+
+      return {
+        ...rest,
+        add_term: add_term?.map(term => {
+          const { id, nameTerm, newTermDate, contractId } = term;
+          return { id, nameTerm, newTermDate, contractId };
+        }) || [],
+      };
+    });
 
     return res.status(200).json({
       data: lightContracts,
       total,
-      page,
-      lastPage: Math.ceil(total / limit),
+      page: all ? 1 : page,
+      lastPage: all ? 1 : Math.ceil(total / limit),
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Erro ao listar contratos (light)', error });
+    return res.status(500).json({ message: 'Erro ao listar contratos', error });
   }
 };
+
 
 
 export const listNotTermContract = async (req: Request, res: Response) => {
