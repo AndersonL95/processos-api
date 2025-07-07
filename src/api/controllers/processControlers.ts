@@ -136,7 +136,7 @@ export const listContracts = async (req: Request, res: Response) => {
   const contractRepo = AppDataSource.getRepository(Contract);
   const tenantId = req.body.tenantId;
 
-  const all = req.query.all === 'true'; // novo
+  const all = req.query.all === 'true';
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const skip = (page - 1) * limit;
